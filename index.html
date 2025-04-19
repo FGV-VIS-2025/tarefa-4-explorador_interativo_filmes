@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IMDb Visualização Interativa</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+  <h1>IMDb - Exploração Interativa de Filmes</h1>
+
+  <div id="controls">
+    <label for="genre-select">Gênero:</label>
+    <select id="genre-select"></select>
+
+    <label for="actor-input">Ator/Atriz:</label>
+    <input type="text" id="actor-input" placeholder="Digite o nome...">
+  </div>
+
+  <div id="chart"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
