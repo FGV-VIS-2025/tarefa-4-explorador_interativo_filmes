@@ -1,1 +1,12 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/oHw8ptbv)
+# IMDb - Visualização Interativa
+
+Este repositório contém a estrutura do site para o projeto da disciplina de Visualização de Dados.
+
+## Como usar
+
+- A visualização final deve ser implementada no arquivo `visualization.js`.
+- Os dados estão no arquivo `data/imdb.json`.
+- A div com id `#visualization` no `index.html` já está preparada para receber a visualização.
+- O site pode ser testado localmente com:
+  ```bash
+  python -m http.server

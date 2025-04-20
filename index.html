@@ -1,104 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IMDb Visualização Interativa</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
   <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 <body>
-  <h1>IMDb - Exploração Interativa de Filmes</h1>
+  <h1>IMDb - Visualização Interativa</h1>
 
-  <div id="controls">
-    <label for="genre-select">Gênero:</label>
-    <select id="genre-select"></select>
-
-    <label for="actor-input">Ator/Atriz:</label>
-    <input type="text" id="actor-input" placeholder="Digite o nome...">
+  <div id="descricao">
+    <p>
+      Esta é a estrutura base do site do projeto de visualização interativa do IMDb.
+      Carregue a visualização final aqui.
+    </p>
   </div>
 
-  <canvas id="chart-canvas" width="900" height="500"></canvas>
+  <div id="visualization">
+    <!-- Insira aqui a visualização final -->
+  </div>
 
-  <script>
-    const canvas = document.getElementById("chart-canvas");
-    const ctx = canvas.getContext("2d");
-    const width = canvas.width;
-    const height = canvas.height;
-    const margin = { top: 40, right: 30, bottom: 60, left: 60 };
-
-    const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
-
-    let dataGlobal = [];
-    let xScale, yScale;
-
-    function clearCanvas() {
-      ctx.clearRect(0, 0, width, height);
-    }
-
-    function drawAxes() {
-      ctx.fillStyle = "black";
-      ctx.font = "12px sans-serif";
-      ctx.beginPath();
-      ctx.moveTo(margin.left, margin.top);
-      ctx.lineTo(margin.left, height - margin.bottom);
-      ctx.lineTo(width - margin.right, height - margin.bottom);
-      ctx.stroke();
-    }
-
-    function drawPoints(filteredData) {
-      clearCanvas();
-      drawAxes();
-
-      filteredData.forEach(d => {
-        const x = xScale(d.startYear);
-        const y = yScale(d.averageRating);
-
-        ctx.beginPath();
-        ctx.arc(x, y, 2, 0, Math.PI * 2);
-        ctx.fillStyle = "steelblue";
-        ctx.fill();
-      });
-    }
-
-    d3.json("data/imdb.json").then(data => {
-      data = data.filter(d => d.startYear && d.averageRating && d.primaryTitle);
-      data.forEach(d => {
-        d.startYear = +d.startYear;
-        d.averageRating = +d.averageRating;
-      });
-      dataGlobal = data;
-
-      const xDomain = d3.extent(data, d => d.startYear);
-      const yDomain = [0, 10];
-
-      xScale = d3.scaleLinear().domain(xDomain).range([margin.left, width - margin.right]);
-      yScale = d3.scaleLinear().domain(yDomain).range([height - margin.bottom, margin.top]);
-
-      drawPoints(data);
-
-      const genres = [...new Set(data.flatMap(d => d.genres ? d.genres.split(",") : []))].sort();
-      const genreSelect = d3.select("#genre-select");
-      genreSelect.append("option").text("Todos");
-      genres.forEach(g => genreSelect.append("option").text(g));
-
-      genreSelect.on("change", updateFiltered);
-      d3.select("#actor-input").on("input", updateFiltered);
-
-      function updateFiltered() {
-        const genre = genreSelect.property("value");
-        const actor = d3.select("#actor-input").property("value").toLowerCase();
-
-        const filtered = dataGlobal.filter(d => {
-          const matchesGenre = genre === "Todos" || (d.genres && d.genres.includes(genre));
-          const matchesActor = !actor || (d.actors && d.actors.toLowerCase().includes(actor));
-          return matchesGenre && matchesActor;
-        });
-
-        drawPoints(filtered);
-      }
-    });
-  </script>
+  <script src="visualization.js"></script>
 </body>
 </html>
