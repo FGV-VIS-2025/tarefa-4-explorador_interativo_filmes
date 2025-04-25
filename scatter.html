@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Filmes IMDb: Scatter por Gênero</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    .axis-label {
+      font-size: 13px;
+      font-weight: bold;
+    }
+    .tooltip {
+      position: absolute;
+      text-align: left;
+      padding: 6px;
+      background: white;
+      border: 1px solid #ccc;
+      font-size: 12px;
+      pointer-events: none;
+    }
+    #genre-select {
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <label for="genre-select">Filtrar por gênero:</label>
+  <select id="genre-select">
+    <option value="all">Todos</option>
+  </select>
+
+  <svg width="900" height="600"></svg>
+
+  <script>
+    const margin = {top: 40, right: 40, bottom: 60, left: 60},
+          width = 900 - margin.left - margin.right,
+          height = 600 - margin.top - margin.bottom;
+
+    const svg = d3.select("svg")
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    const tooltip = d3.select("body").append("div")
+      .attr("class", "tooltip")
+      .style("opacity", 0);
+
+    const colorScale = d3.scaleOrdinal(d3.schemeTableau10);
+
+    d3.tsv("static/title_final.tsv").then(data => {
+      // Processamento
+      data = data.filter(d => d.averageRating && d.numVotes && d.genres && d.genres !== "\\N");
+
+      data.forEach(d => {
+        d.averageRating = +d.averageRating;
+        d.numVotes = +d.numVotes;
+        d.mainGenre = d.genres.split(',')[0]; // usa o primeiro gênero como principal
+      });
+
+      const x = d3.scaleLog()
+        .domain(d3.extent(data, d => d.numVotes))
+        .range([0, width])
+        .nice();
+
+      const y = d3.scaleLinear()
+        .domain(d3.extent(data, d => d.averageRating))
+        .range([height, 0])
+        .nice();
+
+      const xAxis = svg.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x).ticks(10, "~s"));
+
+      const yAxis = svg.append("g")
+        .call(d3.axisLeft(y));
+
+      xAxis.append("text")
+        .attr("class", "axis-label")
+        .attr("x", width / 2)
+        .attr("y", 40)
+        .attr("fill", "black")
+        .text("Número de Votos (log)");
+
+      yAxis.append("text")
+        .attr("class", "axis-label")
+        .attr("x", -height / 2)
+        .attr("y", -45)
+        .attr("transform", "rotate(-90)")
+        .attr("fill", "black")
+        .text("Nota Média");
+
+      // Gêneros únicos
+      const genres = Array.from(new Set(data.map(d => d.mainGenre))).sort();
+      const dropdown = d3.select("#genre-select");
+
+      genres.forEach(g => {
+        dropdown.append("option").attr("value", g).text(g);
+      });
+
+      // Função para desenhar os pontos (com transição)
+      function update(filteredData) {
+        const circles = svg.selectAll("circle")
+          .data(filteredData, d => d.tconst);
+
+        // Remover os que saíram
+        circles.exit()
+          .transition()
+          .duration(500)
+          .attr("r", 0)
+          .remove();
+
+        // Atualizar existentes
+        circles
+          .transition()
+          .duration(500)
+          .attr("cx", d => x(d.numVotes))
+          .attr("cy", d => y(d.averageRating))
+          .attr("fill", d => colorScale(d.mainGenre));
+
+        // Adicionar novos
+        circles.enter()
+          .append("circle")
+          .attr("r", 0)
+          .attr("cx", d => x(d.numVotes))
+          .attr("cy", d => y(d.averageRating))
+          .attr("fill", d => colorScale(d.mainGenre))
+          .on("mouseover", (event, d) => {
+            tooltip.transition().duration(100).style("opacity", 1);
+            tooltip.html(`Nota: ${d.averageRating}<br>Votos: ${d.numVotes}<br>Gênero: ${d.mainGenre}`)
+              .style("left", (event.pageX + 10) + "px")
+              .style("top", (event.pageY - 30) + "px");
+          })
+          .on("mouseout", () => tooltip.transition().duration(200).style("opacity", 0))
+          .transition()
+          .duration(500)
+          .attr("r", 3);
+      }
+
+      // Inicializar com todos
+      update(data);
+
+      // Filtro por gênero
+      dropdown.on("change", function () {
+        const selected = this.value;
+        if (selected === "all") {
+          update(data);
+        } else {
+          const filtered = data.filter(d => d.mainGenre === selected);
+          update(filtered);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
