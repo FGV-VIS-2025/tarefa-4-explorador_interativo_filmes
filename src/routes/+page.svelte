@@ -1,41 +1,180 @@
 <script>
-    import { onMount } from 'svelte';
-    import { renderBarChart } from '$lib/charts/barChart.js';
-    import '$lib/charts/barChart.css';
+  import { onMount } from 'svelte';
+  import * as d3 from 'd3';
+  import grafoCompleto from '$lib/data/grafo_peliculas.json';
+
+  let graphData = null;
+  let filteredGraph = { nodes: [], links: [] };
+  let selectedMovie = '';
+
+  let width = 0;
+  let height = 0;
+
+  onMount(() => {
+    graphData = grafoCompleto;
+    updateSize();
+    window.addEventListener('resize', updateSize);
+  });
+
+  function updateSize() {
+    width = window.innerWidth;
+    height = window.innerHeight - 80; 
+  }
+
+  function searchMovie(movieId) {
+    const node = graphData.nodes.find(d => d.id === movieId);
+    if (!node) return;
+
+    const componentId = node.component;
+
+    const nodesInComponent = graphData.nodes.filter(d => d.component === componentId);
+    const nodeIdsInComponent = new Set(nodesInComponent.map(d => d.id));
+
+    let linksInComponent = graphData.links.filter(d =>
+      nodeIdsInComponent.has(d.source) && nodeIdsInComponent.has(d.target)
+    ).map(d => ({
+      source: typeof d.source === 'object' ? d.source.id : d.source,
+      target: typeof d.target === 'object' ? d.target.id : d.target,
+      weight: d.weight
+    }));
+
+    
+    const adjacency = new Map();
+    for (const node of nodesInComponent) {
+      adjacency.set(node.id, []);
+    }
+    for (const link of linksInComponent) {
+      adjacency.get(link.source).push(link.target);
+      adjacency.get(link.target).push(link.source);
+    }
+
+    const visited = new Set([movieId]);
+    const queue = [movieId];
+    const resultNodes = new Set([movieId]);
+
+    while (queue.length > 0 && resultNodes.size < 20) {
+      const current = queue.shift();
+      for (const neighbor of adjacency.get(current)) {
+        if (!visited.has(neighbor)) {
+          visited.add(neighbor);
+          resultNodes.add(neighbor);
+          queue.push(neighbor);
+        }
+      }
+    }
+
+    const nodes = graphData.nodes.filter(d => resultNodes.has(d.id));
+    const nodeIds = new Set(nodes.map(d => d.id));
+
+    const links = graphData.links.filter(d => nodeIds.has(d.source) && nodeIds.has(d.target)).map(d => ({
+      source: typeof d.source === 'object' ? d.source.id : d.source,
+      target: typeof d.target === 'object' ? d.target.id : d.target,
+      weight: d.weight
+    }));
+
+    filteredGraph = { nodes, links };
+    drawGraph(filteredGraph);
+  }
+
+  function drawGraph(graph) {
+  d3.select('svg').selectAll('*').remove();  
+
+  const svg = d3.select('svg')
+    .attr('width', width)
+    .attr('height', height);
+  
+  
+  const genres = Array.from(new Set(graph.nodes.map(d => (d.genres || '').split(',')[0])));
+  const colorScale = d3.scaleOrdinal()
+    .domain(genres)
+    .range(d3.schemeCategory10);
+
+  const simulation = d3.forceSimulation(graph.nodes)
+    .force('link', d3.forceLink(graph.links).id(d => d.id).distance(100))
+    .force('charge', d3.forceManyBody().strength(-200))
+    .force('center', d3.forceCenter(width / 2, height / 2));
+
+  const link = svg.append('g')
+    .selectAll('line')
+    .data(graph.links)
+    .join('line')
+    .attr('stroke-width', d => Math.sqrt(d.weight || 1))
+    .attr('stroke', '#999');
+
+  const node = svg.append('g')
+    .selectAll('circle')
+    .data(graph.nodes)
+    .join('circle')
+    .attr('r', 8)
+    .attr('fill', d => colorScale((d.genres || '').split(',')[0]))  // Color por género principal
+    .call(drag(simulation));
+
+  const label = svg.append('g')
+    .selectAll('text')
+    .data(graph.nodes)
+    .join('text')
+    .text(d => d.title || d.id)
+    .attr('x', 6)
+    .attr('y', 3);
+
+  simulation.on('tick', () => {
+    link
+      .attr('x1', d => d.source.x)
+      .attr('y1', d => d.source.y)
+      .attr('x2', d => d.target.x)
+      .attr('y2', d => d.target.y);
+
+    node
+      .attr('cx', d => d.x)
+      .attr('cy', d => d.y);
+
+    label
+      .attr('x', d => d.x + 10)
+      .attr('y', d => d.y);
+  });
+
+  function drag(simulation) {
+      return d3.drag()
+        .on('start', event => {
+          if (!event.active) simulation.alphaTarget(0.3).restart();
+          event.subject.fx = event.subject.x;
+          event.subject.fy = event.subject.y;
+        })
+        .on('drag', event => {
+          event.subject.fx = event.x;
+          event.subject.fy = event.y;
+        })
+        .on('end', event => {
+          if (!event.active) simulation.alphaTarget(0);
+          event.subject.fx = null;
+          event.subject.fy = null;
+        });
+    }
+  }
+
 
   
-    onMount(() => {
-      renderBarChart('#grafico1');
-    });
-  </script>
-  
-  <style>
-    main {
-      padding: 2rem;
-      font-family: system-ui, sans-serif;
-      background-color: #f5f5f5;
-    }
-  
-    h1 {
-      color: #2a2a2a;
-    }
-  
-    .chart-container {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      padding: 1rem;
-      max-width: 600px;
-      margin: 2rem auto;
-    }
-  </style>
-  
-  <main>
-    <h1>Esqueleto da Visualización</h1>
-  
-    <div class="chart-container">
-      <h2>Exemplo de grafico simple</h2>
-      <div id="grafico1"></div>
-    </div>
-  </main>
-  
+</script>
+
+<input placeholder="ID de película (tconst)" bind:value={selectedMovie} />
+<button on:click={() => searchMovie(selectedMovie)}>Buscar</button>
+
+<svg width={width} height={height}></svg>
+
+<style>
+  body, html {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    height: 100%;
+  }
+
+  input, button {
+    margin: 0.5rem;
+  }
+
+  svg {
+    display: block;
+    border: none;
+  }
+</style>
