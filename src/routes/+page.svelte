@@ -1,6 +1,8 @@
 <script>
     import { onMount } from 'svelte';
+    import { tsv } from 'd3';
     import BarChart from '$lib/charts/BarChart.svelte';
+    
     
     const sampleData = [25, 80, 15, 60, 20];
     const sampleLabels = ['Abacate', 'Banana', 'Caqui', 'Damasco', 'Estrela'];
@@ -12,9 +14,13 @@
     let selectedCategory = 'all';
 
     onMount(async () => {
-        const res = await fetch('/testdata.json');
-        fullData = await res.json();
-        console.log(fullData);
+        const data = await tsv('/testdata.tsv', d => ({
+            ...d,
+            value: +d.value
+        }));
+        
+        fullData = data;
+        console.log('Dados carregados:', fullData);
         aplicarFiltro();
     });
 
@@ -57,5 +63,4 @@
         <p>Carregando ou nenhum dado.</p>
     {/if}   
 
-     <!-- <BarChart data={sampleData} labels={sampleLabels} /> -->
 </main>
