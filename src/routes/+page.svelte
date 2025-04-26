@@ -52,16 +52,20 @@
     const queue = [movieId];
     const resultNodes = new Set([movieId]);
 
-    while (queue.length > 0 && resultNodes.size < 20) {
+    while (queue.length > 0 && resultNodes.size < 40) {
       const current = queue.shift();
       for (const neighbor of adjacency.get(current)) {
         if (!visited.has(neighbor)) {
           visited.add(neighbor);
           resultNodes.add(neighbor);
+
+          if (resultNodes.size >= 40) break;  
+
           queue.push(neighbor);
         }
       }
     }
+
 
     const nodes = graphData.nodes.filter(d => resultNodes.has(d.id));
     const nodeIds = new Set(nodes.map(d => d.id));
@@ -76,64 +80,93 @@
     drawGraph(filteredGraph);
   }
 
+  
   function drawGraph(graph) {
-  d3.select('svg').selectAll('*').remove();  
+    d3.select('svg').selectAll('*').remove();  
 
-  const svg = d3.select('svg')
-    .attr('width', width)
-    .attr('height', height);
-  
-  
-  const genres = Array.from(new Set(graph.nodes.map(d => (d.genres || '').split(',')[0])));
-  const colorScale = d3.scaleOrdinal()
-    .domain(genres)
-    .range(d3.schemeCategory10);
+    console.log("Nodos:", graph.nodes.length);  // Verificar contenido
+    console.log("Links:", graph.links.length);
 
-  const simulation = d3.forceSimulation(graph.nodes)
-    .force('link', d3.forceLink(graph.links).id(d => d.id).distance(100))
-    .force('charge', d3.forceManyBody().strength(-200))
-    .force('center', d3.forceCenter(width / 2, height / 2));
+    const svg = d3.select('svg')
+      .attr('width', width)
+      .attr('height', height);
 
-  const link = svg.append('g')
-    .selectAll('line')
-    .data(graph.links)
-    .join('line')
-    .attr('stroke-width', d => Math.sqrt(d.weight || 1))
-    .attr('stroke', '#999');
+    const sizeScale = d3.scaleLinear()
+      .domain([d3.min(graph.nodes, d => d.averageRating), d3.max(graph.nodes, d => d.averageRating)])
+      .range([5, 20]);  
 
-  const node = svg.append('g')
-    .selectAll('circle')
-    .data(graph.nodes)
-    .join('circle')
-    .attr('r', 8)
-    .attr('fill', d => colorScale((d.genres || '').split(',')[0]))  // Color por género principal
-    .call(drag(simulation));
+    const genres = Array.from(new Set(graph.nodes.map(d => (d.genres || '').split(',')[0])));
+    const colorScale = d3.scaleOrdinal()
+      .domain(genres)
+      .range(d3.schemeCategory10);
 
-  const label = svg.append('g')
-    .selectAll('text')
-    .data(graph.nodes)
-    .join('text')
-    .text(d => d.title || d.id)
-    .attr('x', 6)
-    .attr('y', 3);
+    const simulation = d3.forceSimulation(graph.nodes)
+      .force('link', d3.forceLink(graph.links).id(d => d.id).distance(100))
+      .force('charge', d3.forceManyBody().strength(-200))
+      .force('center', d3.forceCenter(width / 2, height / 2));
 
-  simulation.on('tick', () => {
-    link
-      .attr('x1', d => d.source.x)
-      .attr('y1', d => d.source.y)
-      .attr('x2', d => d.target.x)
-      .attr('y2', d => d.target.y);
+    const link = svg.append('g')
+      .selectAll('line')
+      .data(graph.links)
+      .join('line')
+      .attr('stroke-width', d => Math.sqrt(d.weight || 1))
+      .attr('stroke', '#999');
 
-    node
-      .attr('cx', d => d.x)
-      .attr('cy', d => d.y);
+    const node = svg.append('g')
+      .selectAll('circle')
+      .data(graph.nodes)
+      .join('circle')
+      .attr('r', d => sizeScale(d.averageRating))  
+      .attr('fill', d => colorScale((d.genres || '').split(',')[0]))  
+      .call(drag(simulation));
 
-    label
-      .attr('x', d => d.x + 10)
-      .attr('y', d => d.y);
-  });
+    const tooltip = d3.select("#tooltip");
 
-  function drag(simulation) {
+    node.on('mouseover', (event, d) => {
+        tooltip.style("display", "block")
+          .html(`<strong>${d.title}</strong><br/>
+                Género: ${d.genres}<br/>
+                Rating: ${d.averageRating}<br/>
+                Director(es): ${d.directors}`)
+          .style("left", (event.pageX + 10) + "px")
+          .style("top", (event.pageY + 10) + "px");
+      })
+      .on('mouseout', () => {
+        tooltip.style("display", "none");
+      })
+      .on('click', d => showDetails(d));
+
+    const label = svg.append('g')
+      .selectAll('text')
+      .data(graph.nodes)
+      .join('text')
+      .attr('x', 6)
+      .attr('y', 3);
+
+    simulation.on('tick', () => {
+      link
+        .attr('x1', d => d.source.x)
+        .attr('y1', d => d.source.y)
+        .attr('x2', d => d.target.x)
+        .attr('y2', d => d.target.y);
+
+      node
+        .attr('cx', d => d.x)
+        .attr('cy', d => d.y);
+
+      label
+        .attr('x', d => d.x + 10)
+        .attr('y', d => d.y);
+    });
+
+    function showDetails(d) {
+      alert(`${d.title}
+      Género: ${d.genres}
+      Rating: ${d.averageRating}
+      Director(es): ${d.directors}`);
+    }
+
+    function drag(simulation) {
       return d3.drag()
         .on('start', event => {
           if (!event.active) simulation.alphaTarget(0.3).restart();
@@ -151,8 +184,7 @@
         });
     }
   }
-
-
+  
   
 </script>
 
@@ -160,6 +192,8 @@
 <button on:click={() => searchMovie(selectedMovie)}>Buscar</button>
 
 <svg width={width} height={height}></svg>
+
+<div id="tooltip" style="position: absolute; display: none; background: white; border: 1px solid #ccc; padding: 5px;"></div>
 
 <style>
   body, html {
@@ -177,4 +211,11 @@
     display: block;
     border: none;
   }
+  #tooltip {
+    pointer-events: none;
+    border-radius: 4px;
+    font-size: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  }
+
 </style>
