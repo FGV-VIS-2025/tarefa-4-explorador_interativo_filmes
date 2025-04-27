@@ -6,11 +6,14 @@
   
     export let data = [];
     export let labels = [];
+    export let title   = '';
+    export let xLabel  = '';
+    export let yLabel  = '';
     
     const chartConfig = {
         width: 550,
         height: 380,
-        margin: { top: 25, right: 20, bottom: 80, left: 70 }
+        margin: { top: 25, right: 20, bottom: 60, left: 100 }
     };
 
     const { width, height, margin } = chartConfig;
@@ -96,6 +99,27 @@
 <div bind:this={tooltip} class="tooltip"></div>
 
 <svg {width} {height}>
+    <text
+        class="chart-title"
+        x={width / 2}
+        y={margin.top / 2}
+    >{title}</text>
+
+    <!-- legenda eixo X -->
+    <text
+        class="axis-label axis-label-x"
+        x={margin.left + innerWidth / 2}
+        y={margin.top + innerHeight + margin.bottom - 10}
+    >{xLabel}</text>
+
+    <!-- legenda eixo Y (rotacionada) -->
+    <text
+        class="axis-label axis-label-y"
+        x={-(margin.top + innerHeight / 2)}
+        y={margin.left / 2 - 30}
+        transform="rotate(-90)"
+    >{yLabel}</text>
+
     <g
       bind:this={barsGroup}
       transform={`translate(${margin.left},${margin.top})`}

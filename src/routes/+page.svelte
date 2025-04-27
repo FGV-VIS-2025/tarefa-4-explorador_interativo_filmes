@@ -6,7 +6,7 @@
 
     import BarChart from '$lib/charts/BarChart.svelte';
     import HBarChart from '$lib/charts/hbarchart.svelte';
-
+    
 
     let fullData = [];
     let genreCounts = {};
@@ -132,7 +132,7 @@
     <div bind:this={sliderEl} class="year-slider"></div>
 
     {#if nominations.length}
-        <HBarChart data={nominations} labels={genres} />
+        <HBarChart data={nominations} labels={genres} title="titulo" xLabel="xlabel" yLabel="ylabel" />
     {:else}
         <p>Carregando ou nenhum dado.</p>
     {/if}   
