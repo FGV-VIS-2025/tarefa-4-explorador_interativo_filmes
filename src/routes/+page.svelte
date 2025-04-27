@@ -8,7 +8,7 @@
     let genres = [];
     let nominations = [];
 
-    let selectedCategory = 'all';
+    let selectedView = 'oscarNominations';
     let flagSum = false;
 
     function processData() {
@@ -18,9 +18,9 @@
             d.genres.forEach(genre => {
                 if (genre) {
                     if (flagSum) {
-                        genreCounts[genre] = (genreCounts[genre] || 0) + 1; // Conta filmes
+                        genreCounts[genre] = (genreCounts[genre] || 0) + ((d[selectedView] || 0) > 0 ? 1 : 0); // Count
                     } else {
-                        genreCounts[genre] = (genreCounts[genre] || 0) + d.oscarNominations; // Soma indicações
+                        genreCounts[genre] = (genreCounts[genre] || 0) + (d[selectedView] || 0); // Sum
                     }
                 }
             });
@@ -28,12 +28,28 @@
 
         genres = Object.keys(genreCounts);
         nominations = Object.values(genreCounts);
+
+        const sorted = genres
+            .map((genre, i) => ({ genre, value: nominations[i] }))
+            .sort((a, b) => b.value - a.value)
+            .slice(0, 10); // Top 10
+
+        genres = sorted.map(d => d.genre);
+        nominations = sorted.map(d => d.value);
+
+        console.log('Gêneros:', genres);
+        console.log('Indicações:', nominations);
     }
 
     onMount(async () => {
         const data = await tsv('/title_oscar.tsv', d => ({
             ...d,
+            startYear: +d.startYear,
+            runtimeMinutes: +d.runtimeMinutes,
+            averageRating: +d.averageRating,
+            numVotes: +d.numVotes,
             oscarNominations: +d.oscarNominations,
+            oscarWins: +d.oscarWins,
             genres: d.genres ? d.genres.split(',') : []
         }));
         fullData = data;
@@ -41,24 +57,12 @@
         console.log('Número de dados:', data.length);
 
         processData();
-        console.log('Gêneros:', genres);
-        console.log('Indicações:', nominations);
     });
-
-    // function aplicarFiltro() {
-    //     const dados = selectedCategory === 'all'
-    //         ? fullData
-    //         : fullData.filter(d => d.type === selectedCategory);
-
-    //     filteredLabels = dados.map(d => d.name);
-    //     filteredData = dados.map(d => d.value);
-    // }
     
     function handleCategoryChange(event) {
-        selectedCategory = event.target.value;
-        console.log(`Selected category: ${selectedCategory}`); // Log the selected category
-        // aplicarFiltro();
-        // console.log(filteredData); // Log the filtered data after applying the filter
+        selectedView = event.target.value;
+        console.log(`Selected View: ${selectedView}`);
+        processData();
     }
 </script>
 
@@ -71,10 +75,8 @@
     <label>
         Filter:
         <select on:change={handleCategoryChange}>
-            <option value="all">All</option>
-            <option value="fruit">Fruit</option>
-            <option value="car">Car</option>
-            <option value="animal">Animal</option>
+            <option value="oscarNominations">Nominations</option>
+            <option value="oscarWins">Wins</option>
         </select>
     </label>
 
