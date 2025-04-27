@@ -5,7 +5,7 @@
 }
 
 .bar:hover {
-  fill: darkorange;
+  fill: rgb(215, 212, 11);
 }
 
 /* Estilo do tooltip (caixa que aparece com interacao do mouse) */
