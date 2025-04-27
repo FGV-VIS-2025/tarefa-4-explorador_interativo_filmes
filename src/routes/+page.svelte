@@ -2,6 +2,8 @@
     import { onMount } from 'svelte';
     import { tsv } from 'd3';
     import BarChart from '$lib/charts/BarChart.svelte';
+    import HBarChart from '$lib/charts/hbarchart.svelte';
+
 
     let fullData = [];
     let genreCounts = {};
@@ -37,8 +39,8 @@
         genres = sorted.map(d => d.genre);
         nominations = sorted.map(d => d.value);
 
-        console.log('Gêneros:', genres);
-        console.log('Indicações:', nominations);
+        console.log('Genres:', genres);
+        console.log('Nominations:', nominations);
     }
 
     onMount(async () => {
@@ -53,8 +55,8 @@
             genres: d.genres ? d.genres.split(',') : []
         }));
         fullData = data;
-        console.log('Dados carregados:', data);
-        console.log('Número de dados:', data.length);
+        console.log('Loaded data:', data);
+        console.log('Number of records:', data.length);
 
         processData();
     });
@@ -73,7 +75,7 @@
     <h2>Gráfico de Barras com SvelteKit e D3</h2>
 
     <label>
-        Filter:
+        Select view:
         <select on:change={handleCategoryChange}>
             <option value="oscarNominations">Nominations</option>
             <option value="oscarWins">Wins</option>
@@ -82,11 +84,11 @@
 
     <label>
         <input type="checkbox" bind:checked={flagSum} on:change={processData} />
-        Contar apenas quantidade de filmes (não somar indicações)
+        Count unique movies
     </label>    
 
     {#if nominations.length}
-        <BarChart data={nominations} labels={genres} />
+        <HBarChart data={nominations} labels={genres} />
     {:else}
         <p>Carregando ou nenhum dado.</p>
     {/if}   

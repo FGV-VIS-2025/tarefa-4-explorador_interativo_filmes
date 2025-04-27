@@ -3,13 +3,14 @@
     import * as d3 from 'd3';
     import '$lib/styles/barchart.css';
 
+  
     export let data = [];
     export let labels = [];
     
     const chartConfig = {
         width: 550,
         height: 380,
-        margin: { top: 25, right: 20, bottom: 80, left: 45 }
+        margin: { top: 25, right: 20, bottom: 80, left: 70 }
     };
 
     const { width, height, margin } = chartConfig;
@@ -19,11 +20,11 @@
     let tooltip;
 
     let barsGroup, xAxisGroup, yAxisGroup;
-    let xScale = d3.scaleBand().range([0, innerWidth]).padding(0.1);
-    let yScale = d3.scaleLinear().range([innerHeight, 0]);
+    let yScale = d3.scaleBand().range([0, innerHeight]).padding(0.1);
+    let xScale = d3.scaleLinear().range([0, innerWidth]);
 
     function drawChart() {
-        console.log('drawChart() em barchart.svelte');
+        console.log('drawChart() em hbarchart.svelte');
         if (!labels.length || !data.length || !barsGroup){
             console.log('Erro: labels ou data vazios ou barsGroup não definido.');
             return;
@@ -31,24 +32,24 @@
 
         const tooltipG = d3.select(tooltip);
 
-        xScale.domain(labels);
-        yScale.domain([0, d3.max(data, d => d) + 20]);
+        yScale.domain(labels);
+        xScale.domain([0, d3.max(data, d => d) + 20]);
         
         const bars = d3.select(barsGroup).selectAll('rect').data(data);
 
         bars.exit()
             .transition().duration(600)
-            .attr('y', innerHeight)
-            .attr('height', 0)
+            .attr('x', 0)
+            .attr('width', 0)
             .remove();
             
         const barsEnter = bars.enter()
             .append('rect')
             .attr('class', 'bar')
-            .attr('x', (_, i) => xScale(labels[i]))
-            .attr('y', innerHeight)
-            .attr('width', xScale.bandwidth())
-            .attr('height', 0);
+            .attr('x', 0)
+            .attr('y', (_, i) => yScale(labels[i]))
+            .attr('width', 0)
+            .attr('height', yScale.bandwidth());
         
         const allBars = barsEnter.merge(bars);
 
@@ -69,20 +70,17 @@
 
         allBars
             .transition().duration(600)
-                .attr('x', (_, i) => xScale(labels[i]))
-                .attr('y', d => yScale(d))
-                .attr('width', xScale.bandwidth())
-                .attr('height', d => innerHeight - yScale(d));
+            .attr('x', 0)
+               .attr('y', (_, i) => yScale(labels[i]))
+               .attr('width', d => xScale(d))
+               .attr('height', yScale.bandwidth());
         
+        // eixo X (quantitativo)
         d3.select(xAxisGroup)
             .transition().duration(600)
-            .call(d3.axisBottom(xScale))
-            .selectAll('text')
-                .attr('transform', 'rotate(-45)')
-                .style('text-anchor', 'end')
-                .attr('dx', '-0.5em')
-                .attr('dy', '0.25em');
+            .call(d3.axisBottom(xScale));
 
+        // eixo Y (categorias)
         d3.select(yAxisGroup)
             .transition().duration(600)
             .call(d3.axisLeft(yScale));
