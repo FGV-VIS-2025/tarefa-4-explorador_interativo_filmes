@@ -1,6 +1,9 @@
 <script>
     import { onMount } from 'svelte';
-    import { tsv } from 'd3';
+    import { max, min, tsv } from 'd3';
+
+    import noUiSlider from 'nouislider';
+
     import BarChart from '$lib/charts/BarChart.svelte';
     import HBarChart from '$lib/charts/hbarchart.svelte';
 
@@ -13,10 +16,15 @@
     let selectedView = 'oscarNominations';
     let flagSum = false;
 
+    let sliderEl;
+    let minYear, maxYear, startYear, endYear;
+
     function processData() {
+        const sliceData = fullData.filter(d => d.startYear >= startYear && d.startYear <= endYear);
+
         genreCounts = {};
 
-        fullData.forEach(d => {
+        sliceData.forEach(d => { 
             d.genres.forEach(genre => {
                 if (genre) {
                     if (flagSum) {
@@ -55,8 +63,34 @@
             genres: d.genres ? d.genres.split(',') : []
         }));
         fullData = data;
+    
         console.log('Loaded data:', data);
         console.log('Number of records:', data.length);
+
+        // Initialize slider
+        minYear = min(fullData, d => d.startYear);
+        maxYear = max(fullData, d => d.startYear);
+
+        startYear = minYear;
+        endYear = maxYear;
+
+        noUiSlider.create(sliderEl, {
+            start: [minYear, maxYear],
+            connect: true,
+            step: 1,
+            range: { min: minYear, max: maxYear },
+            tooltips: [true, true],
+            format: {
+            to: v => Math.round(v),
+            from: v => Number(v)
+            }
+        });
+
+        sliderEl.noUiSlider.on('update', ([low, high]) => {
+            startYear = low;
+            endYear = high;
+            processData();
+        });
 
         processData();
     });
@@ -67,6 +101,14 @@
         processData();
     }
 </script>
+
+<!-- Descomentar se deletar o static/nouislider.css -->
+<!-- <svelte:head>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.8.1/nouislider.min.css"
+  />
+</svelte:head> -->
 
 <main class="container" >
     <h1>Hello World!</h1>
@@ -85,7 +127,9 @@
     <label>
         <input type="checkbox" bind:checked={flagSum} on:change={processData} />
         Count unique movies
-    </label>    
+    </label>  
+    
+    <div bind:this={sliderEl} class="year-slider"></div>
 
     {#if nominations.length}
         <HBarChart data={nominations} labels={genres} />

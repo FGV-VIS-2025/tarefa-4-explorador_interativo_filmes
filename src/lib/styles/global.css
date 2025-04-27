@@ -1,3 +1,5 @@
+@import '/nouislider.css';
+
 .container {
     display: flex;
     flex-direction: column;
@@ -5,4 +7,13 @@
     justify-content: center;
     min-height: 100vh;
     text-align: center;
+  }
+
+  .year-slider {
+    margin: 1em 0;
+    width: 100%;
+    max-width: 500px;
+  }
+  .noUi-connect {
+    background: #50d100;
   }
