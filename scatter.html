@@ -63,7 +63,7 @@
 
     const colorScale = d3.scaleOrdinal(d3.schemeTableau10);
 
-    d3.tsv("static/title_final_animation.tsv").then(data => {
+    d3.tsv("static/title_oscar.tsv").then(data => {
       // Processamento
       data = data.filter(d => d.averageRating && d.numVotes && d.genres && d.genres !== "\\N");
 
