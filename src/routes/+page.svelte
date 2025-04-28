@@ -1,12 +1,10 @@
 <script>
     import { onMount } from 'svelte';
     import { max, min, tsv } from 'd3';
-
     import noUiSlider from 'nouislider';
-
     import BarChart from '$lib/charts/BarChart.svelte';
     import HBarChart from '$lib/charts/hbarchart.svelte';
-    
+    import {loadMovies} from '$lib/utils/dataLoader';
 
     let fullData = [];
     let genreCounts = {};
@@ -52,20 +50,10 @@
     }
 
     onMount(async () => {
-        const data = await tsv('/title_oscar.tsv', d => ({
-            ...d,
-            startYear: +d.startYear,
-            runtimeMinutes: +d.runtimeMinutes,
-            averageRating: +d.averageRating,
-            numVotes: +d.numVotes,
-            oscarNominations: +d.oscarNominations,
-            oscarWins: +d.oscarWins,
-            genres: d.genres ? d.genres.split(',') : []
-        }));
-        fullData = data;
+        fullData = await loadMovies();
     
-        console.log('Loaded data:', data);
-        console.log('Number of records:', data.length);
+        console.log('Loaded data:', fullData);
+        console.log('Number of records:', fullData.length);
 
         // Initialize slider
         minYear = min(fullData, d => d.startYear);
