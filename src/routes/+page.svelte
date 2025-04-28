@@ -69,8 +69,8 @@
             range: { min: minYear, max: maxYear },
             tooltips: [true, true],
             format: {
-            to: v => Math.round(v),
-            from: v => Number(v)
+            to: Math.round,
+            from: Number
             }
         });
 
@@ -101,7 +101,6 @@
 <main class="container" >
     <h1>Hello World!</h1>
     <p>Exemplos de visualizações</p>
-
     <h2>Gráfico de Barras com SvelteKit e D3</h2>
 
     <label>
