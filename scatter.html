@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Filmes IMDb: Scatter por Gênero</title>
+  <title>Filmes IMDb: Indicações vs Vitórias no Oscar (Jitter Dinâmico)</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     body {
@@ -46,7 +46,7 @@
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom);
 
-    // Definir área de clipping
+    // Área de clipping
     svg.append("defs").append("clipPath")
       .attr("id", "clip")
       .append("rect")
@@ -55,38 +55,32 @@
 
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`)
-      .attr("clip-path", "url(#clip)");  // Aplicando o clipping aqui
+      .attr("clip-path", "url(#clip)");
 
     const tooltip = d3.select("body").append("div")
       .attr("class", "tooltip")
       .style("opacity", 0);
 
-    const colorScale = d3.scaleOrdinal(d3.schemeTableau10);
-
     d3.tsv("static/title_oscar.tsv").then(data => {
-      // Processamento
-      data = data.filter(d => d.averageRating && d.numVotes && d.genres && d.genres !== "\\N");
+      data = data.filter(d => d.oscarNominations && d.oscarWins);
 
       data.forEach(d => {
-        d.averageRating = +d.averageRating;
-        d.numVotes = +d.numVotes;
-        d.mainGenre = d.genres.split(',')[0];
+        d.oscarNominations = +d.oscarNominations;
+        d.oscarWins = +d.oscarWins;
       });
 
-      const x = d3.scaleLog()
-        .domain(d3.extent(data, d => d.numVotes))
-        .range([0, width])
-        .nice();
+      const x = d3.scaleLinear()
+        .domain([0, d3.max(data, d => d.oscarNominations) + 1])
+        .range([0, width]);
 
       const y = d3.scaleLinear()
-        .domain(d3.extent(data, d => d.averageRating))
-        .range([height, 0])
-        .nice();
+        .domain([0, d3.max(data, d => d.oscarWins) + 1])
+        .range([height, 0]);
 
       const xAxis = svg.append("g")
         .attr("class", "x-axis")
         .attr("transform", `translate(${margin.left},${height + margin.top})`)
-        .call(d3.axisBottom(x).ticks(10, "~s"));
+        .call(d3.axisBottom(x).ticks(10));
 
       const yAxis = svg.append("g")
         .attr("class", "y-axis")
@@ -98,7 +92,7 @@
         .attr("x", width / 2)
         .attr("y", 40)
         .attr("fill", "black")
-        .text("Número de Votos (log)");
+        .text("Indicações ao Oscar");
 
       yAxis.append("text")
         .attr("class", "axis-label")
@@ -106,9 +100,12 @@
         .attr("y", -45)
         .attr("transform", "rotate(-90)")
         .attr("fill", "black")
-        .text("Nota Média");
+        .text("Prêmios Oscar Ganhos");
 
-      const genres = Array.from(new Set(data.map(d => d.mainGenre))).sort();
+      const colorScale = d3.scaleOrdinal(d3.schemeTableau10);
+
+      // Criar dropdown de gêneros
+      const genres = Array.from(new Set(data.map(d => d.genres ? d.genres.split(',')[0] : "Other"))).sort();
       const dropdown = d3.select("#genre-select");
 
       genres.forEach(g => {
@@ -116,32 +113,33 @@
       });
 
       let currentData = data;
+      let currentX = x;
+      let currentY = y;
 
-      function drawPoints(xScale, yScale) {
+      function drawPoints(xScale, yScale, jitterFactor = 1) {
         const circles = g.selectAll("circle")
           .data(currentData, d => d.tconst);
 
         circles.join(
           enter => enter.append("circle")
-            .attr("r", 3)
-            .attr("fill", d => colorScale(d.mainGenre))
-            .attr("cx", d => xScale(d.numVotes) + (Math.random() - 0.5) * 5)
-            .attr("cy", d => yScale(d.averageRating) + (Math.random() - 0.5) * 5)
+            .attr("r", 4)
+            .attr("fill", d => colorScale(d.genres ? d.genres.split(',')[0] : "Other"))
+            .attr("cx", d => xScale(d.oscarNominations) + (Math.random() - 0.5) * 8 * jitterFactor)
+            .attr("cy", d => yScale(d.oscarWins) + (Math.random() - 0.5) * 8 * jitterFactor)
             .on("mouseover", (event, d) => {
               tooltip.transition().duration(100).style("opacity", 1);
               tooltip.html(`
                 <strong>${d.primaryTitle}</strong><br>
-                Nota: ${d.averageRating}<br>
-                Votos: ${d.numVotes}<br>
-                Gênero: ${d.mainGenre}
+                Indicações: ${d.oscarNominations}<br>
+                Prêmios: ${d.oscarWins}
               `)
               .style("left", (event.pageX + 10) + "px")
               .style("top", (event.pageY - 30) + "px");
             })
             .on("mouseout", () => tooltip.transition().duration(200).style("opacity", 0)),
           update => update
-            .attr("cx", d => xScale(d.numVotes) + (Math.random() - 0.5) * 5)
-            .attr("cy", d => yScale(d.averageRating) + (Math.random() - 0.5) * 5),
+            .attr("cx", d => xScale(d.oscarNominations) + (Math.random() - 0.5) * 8 * jitterFactor)
+            .attr("cy", d => yScale(d.oscarWins) + (Math.random() - 0.5) * 8 * jitterFactor),
           exit => exit.remove()
         );
       }
@@ -150,8 +148,10 @@
 
       dropdown.on("change", function () {
         const selected = this.value;
-        currentData = selected === "all" ? data : data.filter(d => d.mainGenre === selected);
-        drawPoints(x, y);
+        currentData = selected === "all"
+          ? data
+          : data.filter(d => d.genres && d.genres.split(',')[0] === selected);
+        drawPoints(currentX, currentY);
       });
 
       const zoom = d3.zoom()
@@ -160,14 +160,16 @@
           const transform = event.transform;
           const newX = transform.rescaleX(x);
           const newY = transform.rescaleY(y);
+          currentX = newX;
+          currentY = newY;
 
-          g.selectAll("circle")
-            .attr("cx", d => newX(d.numVotes))
-            .attr("cy", d => newY(d.averageRating));
+          // Atualiza as posições aplicando jitter proporcional ao zoom
+          const jitterFactor = transform.k;  // Jitter aumenta com o zoom
+
+          drawPoints(newX, newY, jitterFactor);
 
           svg.select(".x-axis")
-            .call(d3.axisBottom(newX).ticks(10, "~s"));
-
+            .call(d3.axisBottom(newX).ticks(10));
           svg.select(".y-axis")
             .call(d3.axisLeft(newY));
         });
