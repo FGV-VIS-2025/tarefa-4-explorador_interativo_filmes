@@ -43,8 +43,19 @@
           height = 600 - margin.top - margin.bottom;
 
     const svg = d3.select("svg")
-      .append("g")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom);
+
+    // Definir área de clipping
+    svg.append("defs").append("clipPath")
+      .attr("id", "clip")
+      .append("rect")
+      .attr("width", width)
+      .attr("height", height);
+
+    const g = svg.append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`)
+      .attr("clip-path", "url(#clip)");  // Aplicando o clipping aqui
 
     const tooltip = d3.select("body").append("div")
       .attr("class", "tooltip")
@@ -59,7 +70,7 @@
       data.forEach(d => {
         d.averageRating = +d.averageRating;
         d.numVotes = +d.numVotes;
-        d.mainGenre = d.genres.split(',')[0]; // usa o primeiro gênero como principal
+        d.mainGenre = d.genres.split(',')[0];
       });
 
       const x = d3.scaleLog()
@@ -73,10 +84,13 @@
         .nice();
 
       const xAxis = svg.append("g")
-        .attr("transform", `translate(0,${height})`)
+        .attr("class", "x-axis")
+        .attr("transform", `translate(${margin.left},${height + margin.top})`)
         .call(d3.axisBottom(x).ticks(10, "~s"));
 
       const yAxis = svg.append("g")
+        .attr("class", "y-axis")
+        .attr("transform", `translate(${margin.left},${margin.top})`)
         .call(d3.axisLeft(y));
 
       xAxis.append("text")
@@ -94,7 +108,6 @@
         .attr("fill", "black")
         .text("Nota Média");
 
-      // Gêneros únicos
       const genres = Array.from(new Set(data.map(d => d.mainGenre))).sort();
       const dropdown = d3.select("#genre-select");
 
@@ -102,63 +115,64 @@
         dropdown.append("option").attr("value", g).text(g);
       });
 
-      // Função para desenhar os pontos (com transição)
-      function update(filteredData) {
-        const circles = svg.selectAll("circle")
-          .data(filteredData, d => d.tconst);
+      let currentData = data;
 
-        // Remover os que saíram
-        circles.exit()
-          .transition()
-          .duration(500)
-          .attr("r", 0)
-          .remove();
+      function drawPoints(xScale, yScale) {
+        const circles = g.selectAll("circle")
+          .data(currentData, d => d.tconst);
 
-        // Atualizar existentes
-        circles
-          .transition()
-          .duration(500)
-          .attr("cx", d => x(d.numVotes))
-          .attr("cy", d => y(d.averageRating))
-          .attr("fill", d => colorScale(d.mainGenre));
-
-        // Adicionar novos
-        circles.enter()
-          .append("circle")
-          .attr("r", 0)
-          .attr("cx", d => x(d.numVotes)) // jitter
-          .attr("cy", d => y(d.averageRating))
-          .attr("fill", d => colorScale(d.mainGenre))
-          .on("mouseover", (event, d) => {  
-            tooltip.transition().duration(100).style("opacity", 1);
-            tooltip.html(`
-              <strong>${d.primaryTitle}</strong><br>
-              Nota: ${d.averageRating}<br>
-              Votos: ${d.numVotes}<br>
-              Gênero: ${d.mainGenre}
-            `)
+        circles.join(
+          enter => enter.append("circle")
+            .attr("r", 3)
+            .attr("fill", d => colorScale(d.mainGenre))
+            .attr("cx", d => xScale(d.numVotes) + (Math.random() - 0.5) * 5)
+            .attr("cy", d => yScale(d.averageRating) + (Math.random() - 0.5) * 5)
+            .on("mouseover", (event, d) => {
+              tooltip.transition().duration(100).style("opacity", 1);
+              tooltip.html(`
+                <strong>${d.primaryTitle}</strong><br>
+                Nota: ${d.averageRating}<br>
+                Votos: ${d.numVotes}<br>
+                Gênero: ${d.mainGenre}
+              `)
               .style("left", (event.pageX + 10) + "px")
               .style("top", (event.pageY - 30) + "px");
-          })
-          .on("mouseout", () => tooltip.transition().duration(200).style("opacity", 0))
-          .transition()
-          .duration(500)
-          .attr("r", 2.5);
+            })
+            .on("mouseout", () => tooltip.transition().duration(200).style("opacity", 0)),
+          update => update
+            .attr("cx", d => xScale(d.numVotes) + (Math.random() - 0.5) * 5)
+            .attr("cy", d => yScale(d.averageRating) + (Math.random() - 0.5) * 5),
+          exit => exit.remove()
+        );
       }
 
-      // Inicializar com todos
-      update(data);
+      drawPoints(x, y);
 
-      // Filtro por gênero
       dropdown.on("change", function () {
         const selected = this.value;
-        if (selected === "all") {
-          update(data);
-        } else {
-          const filtered = data.filter(d => d.mainGenre === selected);
-          update(filtered);
-        }
+        currentData = selected === "all" ? data : data.filter(d => d.mainGenre === selected);
+        drawPoints(x, y);
       });
+
+      const zoom = d3.zoom()
+        .scaleExtent([1, 10])
+        .on("zoom", (event) => {
+          const transform = event.transform;
+          const newX = transform.rescaleX(x);
+          const newY = transform.rescaleY(y);
+
+          g.selectAll("circle")
+            .attr("cx", d => newX(d.numVotes))
+            .attr("cy", d => newY(d.averageRating));
+
+          svg.select(".x-axis")
+            .call(d3.axisBottom(newX).ticks(10, "~s"));
+
+          svg.select(".y-axis")
+            .call(d3.axisLeft(newY));
+        });
+
+      svg.call(zoom);
     });
   </script>
 </body>
