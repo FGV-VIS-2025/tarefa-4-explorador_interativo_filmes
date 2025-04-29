@@ -1,7 +1,7 @@
 <script>
-  import BubbleChart from '$lib/bloques/bubble.svelte';
-  import GrafoPelicula from '$lib/bloques/grafo.svelte';
-  import DetallePelicula from '$lib/bloques/DetallePelicula.svelte';
+  import BubbleChart from '$lib/charts/bubble.svelte';
+  import GrafoPelicula from '$lib/charts/grafo.svelte';
+  import DetallePelicula from '$lib/charts/DetallePelicula.svelte';
 
   let selectedMovie = null;
   let selectedData = null;
