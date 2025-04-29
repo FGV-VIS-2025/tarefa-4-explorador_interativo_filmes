@@ -1,4 +1,4 @@
-// import { vitePreprocess } from '@sveltejs/kit/vite';
+// svelte.config.js
 import adapter from '@sveltejs/adapter-static';
 
 const config = {

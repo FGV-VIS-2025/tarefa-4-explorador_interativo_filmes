@@ -84,7 +84,7 @@
       .attr('x', width / 2)
       .attr('y', height - 5)
       .attr('fill', '#ffd700')
-      .text('Calificación Promedio (IMDb)');
+      .text('Average Rating (IMDb)');
   });
 </script>
 

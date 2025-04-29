@@ -19,10 +19,11 @@
   }
 </script>
 
-<h1 style="text-align: center; color: #ffd700;">Explorador Interactivo de Filmes</h1>
+<h1 style="text-align: center; color: #ffd700;">Interactive Movie Explorer</h1>
+<h3 style="text-align: center; color: #ffd700;">Datasets: IMDB and Oscar database</h3>
 
 {#if !selectedMovie}
-  <h2 style="text-align: center; color: #ffd700;">Análise de filmes com base em classificações e prêmios</h2>
+  <h2 style="text-align: center; color: #ffd700;">Analysis of movies based on ratings and Oscar awards</h2>
 
   <div style="display: flex; justify-content: center; margin-top: 2rem;">
     <BubbleChart on:movieSelected={handleMovieSelected} />
