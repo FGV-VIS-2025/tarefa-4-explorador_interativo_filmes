@@ -1,221 +1,45 @@
 <script>
-  import { onMount } from 'svelte';
-  import * as d3 from 'd3';
-  import grafoCompleto from '$lib/data/grafo_peliculas.json';
+  import BubbleChart from '$lib/bloques/bubble.svelte';
+  import GrafoPelicula from '$lib/bloques/grafo.svelte';
+  import DetallePelicula from '$lib/bloques/DetallePelicula.svelte';
 
-  let graphData = null;
-  let filteredGraph = { nodes: [], links: [] };
-  let selectedMovie = '';
+  let selectedMovie = null;
+  let selectedData = null;
 
-  let width = 0;
-  let height = 0;
-
-  onMount(() => {
-    graphData = grafoCompleto;
-    updateSize();
-    window.addEventListener('resize', updateSize);
-  });
-
-  function updateSize() {
-    width = window.innerWidth;
-    height = window.innerHeight - 80; 
+  function handleMovieSelected(event) {
+    selectedMovie = event.detail.id;
+    selectedData = event.detail.data;
   }
 
-  function searchMovie(movieId) {
-    const node = graphData.nodes.find(d => d.id === movieId);
-    if (!node) return;
-
-    const componentId = node.component;
-
-    const nodesInComponent = graphData.nodes.filter(d => d.component === componentId);
-    const nodeIdsInComponent = new Set(nodesInComponent.map(d => d.id));
-
-    let linksInComponent = graphData.links.filter(d =>
-      nodeIdsInComponent.has(d.source) && nodeIdsInComponent.has(d.target)
-    ).map(d => ({
-      source: typeof d.source === 'object' ? d.source.id : d.source,
-      target: typeof d.target === 'object' ? d.target.id : d.target,
-      weight: d.weight
-    }));
-
-    
-    const adjacency = new Map();
-    for (const node of nodesInComponent) {
-      adjacency.set(node.id, []);
-    }
-    for (const link of linksInComponent) {
-      adjacency.get(link.source).push(link.target);
-      adjacency.get(link.target).push(link.source);
-    }
-
-    const visited = new Set([movieId]);
-    const queue = [movieId];
-    const resultNodes = new Set([movieId]);
-
-    while (queue.length > 0 && resultNodes.size < 40) {
-      const current = queue.shift();
-      for (const neighbor of adjacency.get(current)) {
-        if (!visited.has(neighbor)) {
-          visited.add(neighbor);
-          resultNodes.add(neighbor);
-
-          if (resultNodes.size >= 40) break;  
-
-          queue.push(neighbor);
-        }
-      }
-    }
-
-
-    const nodes = graphData.nodes.filter(d => resultNodes.has(d.id));
-    const nodeIds = new Set(nodes.map(d => d.id));
-
-    const links = graphData.links.filter(d => nodeIds.has(d.source) && nodeIds.has(d.target)).map(d => ({
-      source: typeof d.source === 'object' ? d.source.id : d.source,
-      target: typeof d.target === 'object' ? d.target.id : d.target,
-      weight: d.weight
-    }));
-
-    filteredGraph = { nodes, links };
-    drawGraph(filteredGraph);
+  function volverAlBubbleChart() {
+    selectedMovie = null;
+    selectedData = null;
   }
-
-  
-  function drawGraph(graph) {
-    d3.select('svg').selectAll('*').remove();  
-
-    console.log("Nodos:", graph.nodes.length);  // Verificar contenido
-    console.log("Links:", graph.links.length);
-
-    const svg = d3.select('svg')
-      .attr('width', width)
-      .attr('height', height);
-
-    const sizeScale = d3.scaleLinear()
-      .domain([d3.min(graph.nodes, d => d.averageRating), d3.max(graph.nodes, d => d.averageRating)])
-      .range([5, 20]);  
-
-    const genres = Array.from(new Set(graph.nodes.map(d => (d.genres || '').split(',')[0])));
-    const colorScale = d3.scaleOrdinal()
-      .domain(genres)
-      .range(d3.schemeCategory10);
-
-    const simulation = d3.forceSimulation(graph.nodes)
-      .force('link', d3.forceLink(graph.links).id(d => d.id).distance(100))
-      .force('charge', d3.forceManyBody().strength(-200))
-      .force('center', d3.forceCenter(width / 2, height / 2));
-
-    const link = svg.append('g')
-      .selectAll('line')
-      .data(graph.links)
-      .join('line')
-      .attr('stroke-width', d => Math.sqrt(d.weight || 1))
-      .attr('stroke', '#999');
-
-    const node = svg.append('g')
-      .selectAll('circle')
-      .data(graph.nodes)
-      .join('circle')
-      .attr('r', d => sizeScale(d.averageRating))  
-      .attr('fill', d => colorScale((d.genres || '').split(',')[0]))  
-      .call(drag(simulation));
-
-    const tooltip = d3.select("#tooltip");
-
-    node.on('mouseover', (event, d) => {
-        tooltip.style("display", "block")
-          .html(`<strong>${d.title}</strong><br/>
-                Género: ${d.genres}<br/>
-                Rating: ${d.averageRating}<br/>
-                Director(es): ${d.directors}`)
-          .style("left", (event.pageX + 10) + "px")
-          .style("top", (event.pageY + 10) + "px");
-      })
-      .on('mouseout', () => {
-        tooltip.style("display", "none");
-      })
-      .on('click', d => showDetails(d));
-
-    const label = svg.append('g')
-      .selectAll('text')
-      .data(graph.nodes)
-      .join('text')
-      .attr('x', 6)
-      .attr('y', 3);
-
-    simulation.on('tick', () => {
-      link
-        .attr('x1', d => d.source.x)
-        .attr('y1', d => d.source.y)
-        .attr('x2', d => d.target.x)
-        .attr('y2', d => d.target.y);
-
-      node
-        .attr('cx', d => d.x)
-        .attr('cy', d => d.y);
-
-      label
-        .attr('x', d => d.x + 10)
-        .attr('y', d => d.y);
-    });
-
-    function showDetails(d) {
-      alert(`${d.title}
-      Género: ${d.genres}
-      Rating: ${d.averageRating}
-      Director(es): ${d.directors}`);
-    }
-
-    function drag(simulation) {
-      return d3.drag()
-        .on('start', event => {
-          if (!event.active) simulation.alphaTarget(0.3).restart();
-          event.subject.fx = event.subject.x;
-          event.subject.fy = event.subject.y;
-        })
-        .on('drag', event => {
-          event.subject.fx = event.x;
-          event.subject.fy = event.y;
-        })
-        .on('end', event => {
-          if (!event.active) simulation.alphaTarget(0);
-          event.subject.fx = null;
-          event.subject.fy = null;
-        });
-    }
-  }
-  
-  
 </script>
 
-<input placeholder="ID de película (tconst)" bind:value={selectedMovie} />
-<button on:click={() => searchMovie(selectedMovie)}>Buscar</button>
+<h1 style="text-align: center; color: #ffd700;">Explorador Interactivo de Filmes</h1>
 
-<svg width={width} height={height}></svg>
+{#if !selectedMovie}
+  <h2 style="text-align: center; color: #ffd700;">Análisis de Películas según Calificación y Premios (Bubble Chart)</h2>
 
-<div id="tooltip" style="position: absolute; display: none; background: white; border: 1px solid #ccc; padding: 5px;"></div>
+  <div style="display: flex; justify-content: center; margin-top: 2rem;">
+    <BubbleChart on:movieSelected={handleMovieSelected} />
+  </div>
 
-<style>
-  body, html {
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    height: 100%;
-  }
+  <div style="text-align: center; margin-top: 1rem; font-size: 0.9rem; color: #ccc;">
+    Haz click en una burbuja para explorar la red de películas relacionadas.
+  </div>
+{/if}
 
-  input, button {
-    margin: 0.5rem;
-  }
+{#if selectedMovie}
+  <h2 style="text-align: center; color: #ffd700;">Network de Filmes Relacionadas</h2>
 
-  svg {
-    display: block;
-    border: none;
-  }
-  #tooltip {
-    pointer-events: none;
-    border-radius: 4px;
-    font-size: 12px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-  }
-
-</style>
+  <div style="display: flex; margin-top: 2rem; gap: 2rem; justify-content: center;">
+    <div style="flex: 2; max-width: 60%;">
+      <GrafoPelicula movieId={selectedMovie} on:volver={volverAlBubbleChart} />
+    </div>
+    <div style="flex: 1;">
+      <DetallePelicula data={selectedData} />
+    </div>
+  </div>
+{/if}
