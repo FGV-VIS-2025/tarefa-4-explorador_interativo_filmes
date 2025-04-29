@@ -1,7 +1,9 @@
+<!-- src/lib/bloques/grafo.svelte -->
 <script>
   import { createEventDispatcher } from 'svelte';
   import { onMount } from 'svelte';
   import * as d3 from 'd3';
+  import { base } from '$app/paths';
 
   let grafoCompleto = null;
   let graphData = null;
@@ -13,7 +15,7 @@
   const dispatch = createEventDispatcher();
 
   onMount(async () => {
-    const res = await fetch('/data/grafo_peliculas.json');
+    const res = await fetch(`${base}/data/grafo_peliculas.json`);
     grafoCompleto = await res.json();
     graphData = grafoCompleto;
 
