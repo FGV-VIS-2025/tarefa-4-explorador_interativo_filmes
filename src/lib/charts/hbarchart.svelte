@@ -103,6 +103,7 @@
         class="chart-title"
         x={width / 2}
         y={margin.top / 2}
+        fill="white"
     >{title}</text>
 
     <!-- legenda eixo X -->
@@ -110,6 +111,7 @@
         class="axis-label axis-label-x"
         x={margin.left + innerWidth / 2}
         y={margin.top + innerHeight + margin.bottom - 10}
+        fill="white"
     >{xLabel}</text>
 
     <!-- legenda eixo Y (rotacionada) -->
@@ -118,6 +120,7 @@
         x={-(margin.top + innerHeight / 2)}
         y={margin.left / 2 - 30}
         transform="rotate(-90)"
+        fill="white"
     >{yLabel}</text>
 
     <g
