@@ -84,9 +84,9 @@
   }
 
   onMount(async () => {
-    const margin = { top: 40, right: 40, bottom: 60, left: 60 };
+    const margin = { top: 10, right: 40, bottom: 60, left: 60 };
     const width = 800 - margin.left - margin.right;
-    const height = 500 - margin.top - margin.bottom;
+    const height = 430 - margin.top - margin.bottom;
 
     const svg = d3.select(svgRef)
       .attr("width", width + margin.left + margin.right)
@@ -97,6 +97,22 @@
     svg.append("g").attr("class", "data-layer")
       .attr("transform", `translate(${margin.left},${margin.top})`)
       .attr("clip-path", "url(#clip)");
+
+    // Label do eixo X
+    svg.append("text")
+      .attr("class", "x-label")
+      .attr("text-anchor", "middle")
+      .attr("x", margin.left + (width / 2))
+      .attr("y", height + margin.top + 40)
+      .text("Indicações ao Oscar");
+
+    // Label do eixo Y
+    svg.append("text")
+      .attr("class", "y-label")
+      .attr("text-anchor", "middle")
+      .attr("transform", `translate(${margin.left - 45}, ${margin.top + height / 2}) rotate(-90)`)
+      .text("Prêmios recebidos");
+      
 
     svg.append("defs").append("clipPath")
       .attr("id", "clip")
@@ -182,7 +198,7 @@
   }
 
   .legend-wrapper {
-  margin: 10px 0 20px;
+  margin: 4px 0 10px;
 }
 
 .legend {
