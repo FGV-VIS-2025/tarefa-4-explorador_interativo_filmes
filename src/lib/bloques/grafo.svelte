@@ -3,9 +3,8 @@
   import { createEventDispatcher } from 'svelte';
   import { onMount } from 'svelte';
   import * as d3 from 'd3';
-  import { base } from '$app/paths';
+  import { loadGraph } from '$lib/utils/dataLoader.js';
 
-  let grafoCompleto = null;
   let graphData = null;
   let width = 1000;
   let height = 600;
@@ -15,9 +14,8 @@
   const dispatch = createEventDispatcher();
 
   onMount(async () => {
-    const res = await fetch(`${base}/data/grafo_peliculas.json`);
-    grafoCompleto = await res.json();
-    graphData = grafoCompleto;
+    const temp = await loadGraph();
+    graphData = temp;
 
     // Se já existir um movieId no carregamento, desenha direto
     if (movieId) {
