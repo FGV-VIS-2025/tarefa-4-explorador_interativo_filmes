@@ -71,7 +71,6 @@
       .attr('transform', `translate(0, ${height - 30})`)
       .call(xAxis);
 
-    // Etiqueta del eje X
     svg.append('text')
       .attr('class', 'x label')
       .attr('text-anchor', 'middle')

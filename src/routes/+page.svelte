@@ -20,19 +20,19 @@
 <h1 style="text-align: center; color: #ffd700;">Explorador Interactivo de Filmes</h1>
 
 {#if !selectedMovie}
-  <h2 style="text-align: center; color: #ffd700;">Análisis de Películas según Calificación y Premios (Bubble Chart)</h2>
+  <h2 style="text-align: center; color: #ffd700;">Análise de filmes com base em classificações e prêmios</h2>
 
   <div style="display: flex; justify-content: center; margin-top: 2rem;">
     <BubbleChart on:movieSelected={handleMovieSelected} />
   </div>
 
   <div style="text-align: center; margin-top: 1rem; font-size: 0.9rem; color: #ccc;">
-    Haz click en una burbuja para explorar la red de películas relacionadas.
+    Clique em uma bolha para explorar a rede de filmes relacionados.
   </div>
 {/if}
 
 {#if selectedMovie}
-  <h2 style="text-align: center; color: #ffd700;">Network de Filmes Relacionadas</h2>
+  <h2 style="text-align: center; color: #ffd700;">Rede de Filmes Relacionados</h2>
 
   <div style="display: flex; margin-top: 2rem; gap: 2rem; justify-content: center;">
     <div style="flex: 2; max-width: 60%;">

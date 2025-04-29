@@ -10,6 +10,8 @@
   let graphData = grafoCompleto;
   let width = 1000;
   let height = 600;
+  let svgElement;
+
 
   $: if (movieId) {
     setTimeout(() => {
@@ -116,14 +118,21 @@
     const tooltip = d3.select("#tooltip");
 
     node.on('mouseover', (event, d) => {
-        tooltip.style("display", "block")
-          .html(`<strong>${d.title}</strong><br/>Género: ${d.genres}<br/>Rating: ${d.averageRating}<br/>Director(es): ${d.directors}`)
-          .style("left", (event.pageX + 10) + "px")
-          .style("top", (event.pageY + 10) + "px");
-      })
-      .on('mouseout', () => {
-        tooltip.style("display", "none");
-      });
+      tooltip
+        .style("display", "block")
+        .html(`<strong>${d.title}</strong><br/>
+              Género: ${d.genres || 'N/A'}<br/>
+              Rating: ${d.averageRating || 'N/A'}<br/>
+              Director(es): ${d.directors || 'N/A'}`)
+        .style("left", `${event.pageX + 10}px`)
+        .style("top", `${event.pageY + 10}px`);
+    })
+    .on('mouseout', () => {
+      tooltip.style("display", "none");
+    });
+
+
+
 
     simulation.on('tick', () => {
       link
@@ -172,3 +181,19 @@ cursor: pointer;
 border-radius: 5px;">Volver</button>
 
 <svg></svg>
+
+<div
+  id="tooltip"
+  style="
+    position: absolute;
+    display: none;
+    background: white;
+    border: 1px solid #ccc;
+    padding: 5px;
+    pointer-events: none;
+    color: #000;
+    border-radius: 4px;
+    font-size: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    z-index: 10;">
+</div>
