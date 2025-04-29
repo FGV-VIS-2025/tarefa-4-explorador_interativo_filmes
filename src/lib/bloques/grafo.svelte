@@ -2,82 +2,87 @@
   import { createEventDispatcher } from 'svelte';
   import { onMount } from 'svelte';
   import * as d3 from 'd3';
-  import grafoCompleto from '$lib/data/grafo_peliculas.json';
 
-  export let movieId;
-  const dispatch = createEventDispatcher();
-  
-  let graphData = grafoCompleto;
+  let grafoCompleto = null;
+  let graphData = null;
   let width = 1000;
   let height = 600;
   let svgElement;
 
+  export let movieId;
+  const dispatch = createEventDispatcher();
 
-  $: if (movieId) {
-    setTimeout(() => {
+  onMount(async () => {
+    const res = await fetch('/data/grafo_peliculas.json');
+    grafoCompleto = await res.json();
+    graphData = grafoCompleto;
+
+    // Se já existir um movieId no carregamento, desenha direto
+    if (movieId) {
       drawFromMovieId(movieId);
-    }, 0);
+    }
+  });
+
+  // Quando movieId mudar e o grafo já estiver carregado
+  $: if (movieId && graphData) {
+    drawFromMovieId(movieId);
   }
 
   function drawFromMovieId(movieId) {
-  const node = graphData.nodes.find(d => d.id === movieId);
-  if (!node) return;
+    const node = graphData.nodes.find(d => d.id === movieId);
+    if (!node) return;
 
-  const componentId = node.component;
-  const nodesInComponent = graphData.nodes.filter(d => d.component === componentId);
-  const nodeIdsInComponent = new Set(nodesInComponent.map(d => d.id));
+    const componentId = node.component;
+    const nodesInComponent = graphData.nodes.filter(d => d.component === componentId);
+    const nodeIdsInComponent = new Set(nodesInComponent.map(d => d.id));
 
-  let linksInComponent = graphData.links.filter(d =>
-    nodeIdsInComponent.has(d.source) && nodeIdsInComponent.has(d.target)
-  ).map(d => ({
-    source: typeof d.source === 'object' ? d.source.id : d.source,
-    target: typeof d.target === 'object' ? d.target.id : d.target,
-    weight: d.weight
-  }));
+    let linksInComponent = graphData.links.filter(d =>
+      nodeIdsInComponent.has(d.source) && nodeIdsInComponent.has(d.target)
+    ).map(d => ({
+      source: typeof d.source === 'object' ? d.source.id : d.source,
+      target: typeof d.target === 'object' ? d.target.id : d.target,
+      weight: d.weight
+    }));
 
-  const adjacency = new Map();
-  for (const node of nodesInComponent) {
-    adjacency.set(node.id, []);
-  }
-  for (const link of linksInComponent) {
-    adjacency.get(link.source).push(link.target);
-    adjacency.get(link.target).push(link.source);
-  }
+    const adjacency = new Map();
+    for (const node of nodesInComponent) {
+      adjacency.set(node.id, []);
+    }
+    for (const link of linksInComponent) {
+      adjacency.get(link.source).push(link.target);
+      adjacency.get(link.target).push(link.source);
+    }
 
-  const visited = new Set([movieId]);
-  const queue = [movieId];
-  const resultNodes = new Set([movieId]);
+    const visited = new Set([movieId]);
+    const queue = [movieId];
+    const resultNodes = new Set([movieId]);
 
-  while (queue.length > 0 && resultNodes.size < 40) {
-    const current = queue.shift();
-    for (const neighbor of adjacency.get(current)) {
-      if (!visited.has(neighbor)) {
-        visited.add(neighbor);
-        resultNodes.add(neighbor);
-        if (resultNodes.size >= 40) break;
-        queue.push(neighbor);
+    while (queue.length > 0 && resultNodes.size < 40) {
+      const current = queue.shift();
+      for (const neighbor of adjacency.get(current)) {
+        if (!visited.has(neighbor)) {
+          visited.add(neighbor);
+          resultNodes.add(neighbor);
+          if (resultNodes.size >= 40) break;
+          queue.push(neighbor);
+        }
       }
     }
+
+    const nodes = graphData.nodes.filter(d => resultNodes.has(d.id));
+    const nodeIds = new Set(nodes.map(d => d.id));
+
+    const links = graphData.links.filter(d =>
+      nodeIds.has(d.source) && nodeIds.has(d.target)
+    ).map(d => ({
+      source: typeof d.source === 'object' ? d.source.id : d.source,
+      target: typeof d.target === 'object' ? d.target.id : d.target,
+      weight: d.weight
+    }));
+
+    const filteredGraph = { nodes, links };
+    drawGraph(filteredGraph);
   }
-
-  // Solo esos nodos encontrados
-  const nodes = graphData.nodes.filter(d => resultNodes.has(d.id));
-  const nodeIds = new Set(nodes.map(d => d.id));
-
-  const links = graphData.links.filter(d =>
-    nodeIds.has(d.source) && nodeIds.has(d.target)
-  ).map(d => ({
-    source: typeof d.source === 'object' ? d.source.id : d.source,
-    target: typeof d.target === 'object' ? d.target.id : d.target,
-    weight: d.weight
-  }));
-
-  const filteredGraph = { nodes, links };
-  drawGraph(filteredGraph);
-}
-
-
-  
 
   function drawGraph(graph) {
     d3.select('svg').selectAll('*').remove();
@@ -131,9 +136,6 @@
       tooltip.style("display", "none");
     });
 
-
-
-
     simulation.on('tick', () => {
       link
         .attr('x1', d => d.source.x)
@@ -146,8 +148,6 @@
         .attr('cy', d => d.y);
     });
   }
-
-  
 
   function drag(simulation) {
     return d3.drag()
@@ -171,6 +171,7 @@
     dispatch('volver');
   }
 </script>
+
 
 <button on:click={volver} 
 style="margin: 1rem 0; 

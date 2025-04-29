@@ -8,7 +8,7 @@
   let data = [];
 
   onMount(async () => {
-    data = await d3.tsv('/src/lib/data/last1000filmes.tsv', d3.autoType);
+    data = await d3.tsv('/data/last1000filmes.tsv', d3.autoType);
 
     const xScale = d3.scaleLinear()
       .domain([d3.min(data, d => d.averageRating), d3.max(data, d => d.averageRating)])
