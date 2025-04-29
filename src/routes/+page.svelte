@@ -1,7 +1,7 @@
 <script>
-  import BubbleChart from '$lib/bloques/bubble.svelte';
-  import GrafoPelicula from '$lib/bloques/grafo.svelte';
-  import DetallePelicula from '$lib/bloques/DetallePelicula.svelte';
+  import BubbleChart from '$lib/charts/BubbleChart.svelte';
+  import FilmNetwork from '$lib/charts/FilmNetwork.svelte';
+  import FilmDetails from '$lib/charts/FilmDetails.svelte';
 
   let selectedMovie = null;
   let selectedData = null;
@@ -9,9 +9,11 @@
   function handleMovieSelected(event) {
     selectedMovie = event.detail.id;
     selectedData = event.detail.data;
+    console.log(`Selected Movie ID: ${selectedMovie}`);
   }
 
-  function volverAlBubbleChart() {
+  function BackInitialView() {
+    console.log('Back to Bubble Chart');
     selectedMovie = null;
     selectedData = null;
   }
@@ -27,19 +29,19 @@
   </div>
 
   <div style="text-align: center; margin-top: 1rem; font-size: 0.9rem; color: #ccc;">
-    Clique em uma bolha para explorar a rede de filmes relacionados.
+    Click on a bubble to explore the network of related movies.
   </div>
 {/if}
 
 {#if selectedMovie}
-  <h2 style="text-align: center; color: #ffd700;">Rede de Filmes Relacionados</h2>
+  <h2 style="text-align: center; color: #ffd700;">Movies Network</h2>
 
   <div style="display: flex; margin-top: 2rem; gap: 2rem; justify-content: center;">
     <div style="flex: 2; max-width: 60%;">
-      <GrafoPelicula movieId={selectedMovie} on:volver={volverAlBubbleChart} />
+      <FilmNetwork movieId={selectedMovie} on:volver={BackInitialView} />
     </div>
     <div style="flex: 1;">
-      <DetallePelicula data={selectedData} />
+      <FilmDetails data={selectedData} />
     </div>
   </div>
 {/if}
