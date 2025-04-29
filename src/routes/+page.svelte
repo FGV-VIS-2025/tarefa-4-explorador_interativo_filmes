@@ -3,14 +3,13 @@
     import { max, min } from 'd3';
     import noUiSlider from 'nouislider';
     //charts
-    import HBarChart from '$lib/charts/hbarchart.svelte';
+    import HBarChart from '$lib/charts/HBarChart.svelte';
     //utils
     import {loadMovies} from '$lib/utils/dataLoader';
     import { processBarChartData } from '$lib/utils/dataManipulation.js';
 
 
     let fullData = [];
-    let genreCounts = {};
     let genres = [];
     let nominations = [];
 
@@ -87,7 +86,7 @@
     <div bind:this={sliderEl} class="year-slider"></div>
 
     {#if nominations.length}
-        <HBarChart data={nominations} labels={genres} title="titulo" xLabel="xlabel" yLabel="ylabel" />
+        <HBarChart data={nominations} labels={genres} title="titulo" xLabel="Number of indications/movies" yLabel="Genre" />
     {:else}
         <p>Carregando ou nenhum dado.</p>
     {/if}   

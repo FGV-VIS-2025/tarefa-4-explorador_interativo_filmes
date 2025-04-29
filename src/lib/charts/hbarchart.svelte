@@ -36,7 +36,7 @@
         const tooltipG = d3.select(tooltip);
 
         yScale.domain(labels);
-        xScale.domain([0, d3.max(data, d => d) + 20]);
+        xScale.domain([0, d3.max(data, d => d)+100]);
         
         const bars = d3.select(barsGroup).selectAll('rect').data(data);
 
