@@ -2,8 +2,12 @@
     import { onMount } from 'svelte';
     import { max, min } from 'd3';
     import noUiSlider from 'nouislider';
+    //charts
     import HBarChart from '$lib/charts/hbarchart.svelte';
+    //utils
     import {loadMovies} from '$lib/utils/dataLoader';
+    import { processBarChartData } from '$lib/utils/dataManipulation.js';
+
 
     let fullData = [];
     let genreCounts = {};
@@ -16,33 +20,10 @@
     let sliderEl;
     let minYear, maxYear, startYear, endYear;
 
-    function processData() {
-        const sliceData = fullData.filter(d => d.startYear >= startYear && d.startYear <= endYear);
-
-        genreCounts = {};
-
-        sliceData.forEach(d => { 
-            d.genres.forEach(genre => {
-                if (genre) {
-                    if (flagSum) {
-                        genreCounts[genre] = (genreCounts[genre] || 0) + ((d[selectedView] || 0) > 0 ? 1 : 0); // Count
-                    } else {
-                        genreCounts[genre] = (genreCounts[genre] || 0) + (d[selectedView] || 0); // Sum
-                    }
-                }
-            });
-        });
-
-        genres = Object.keys(genreCounts);
-        nominations = Object.values(genreCounts);
-
-        const sorted = genres
-            .map((genre, i) => ({ genre, value: nominations[i] }))
-            .sort((a, b) => b.value - a.value)
-            .slice(0, 10); // Top 10
-
-        genres = sorted.map(d => d.genre);
-        nominations = sorted.map(d => d.value);
+    function updateBarChart() {
+        const result = processBarChartData(fullData, startYear, endYear, selectedView, flagSum);
+        genres = result.genres;
+        nominations = result.nominations;
 
         console.log('Genres:', genres);
         console.log('Nominations:', nominations);
@@ -76,32 +57,20 @@
         sliderEl.noUiSlider.on('update', ([low, high]) => {
             startYear = low;
             endYear = high;
-            processData();
+            updateBarChart();
         });
 
-        processData();
+        updateBarChart();
     });
-    
+
     function handleCategoryChange(event) {
         selectedView = event.target.value;
         console.log(`Selected View: ${selectedView}`);
-        processData();
+        updateBarChart();
     }
 </script>
 
-<!-- Descomentar se deletar o static/nouislider.css -->
-<!-- <svelte:head>
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.8.1/nouislider.min.css"
-  />
-</svelte:head> -->
-
 <main class="container" >
-    <h1>Hello World!</h1>
-    <p>Exemplos de visualizações</p>
-    <h2>Gráfico de Barras com SvelteKit e D3</h2>
-
     <label>
         Select view:
         <select on:change={handleCategoryChange}>
@@ -111,7 +80,7 @@
     </label>
 
     <label>
-        <input type="checkbox" bind:checked={flagSum} on:change={processData} />
+        <input type="checkbox" bind:checked={flagSum} on:change={updateBarChart} />
         Count unique movies
     </label>  
     
