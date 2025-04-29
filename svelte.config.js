@@ -1,17 +1,14 @@
 import { vitePreprocess } from '@sveltejs/kit/vite';
-import adapter from '@sveltejs/adapter-auto';
+import adapter from '@sveltejs/adapter-static';
 
 const config = {
-  preprocess: vitePreprocess(),
-
-  kit: {
-    adapter: adapter(),
-
-    alias: {
-      $lib: 'src/lib',
-      $routes: 'src/routes'
-    }
-  }
+	kit: {
+		adapter: adapter({ fallback: '404.html' }),
+		paths: {
+			base: process.argv.includes('dev') ? '' : process.env.BASE_PATH,
+		},
+	},
 };
+
 
 export default config;
