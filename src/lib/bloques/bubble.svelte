@@ -1,6 +1,8 @@
+<!-- src/lib/bloques/bubble.svelte -->
 <script>
   import { createEventDispatcher, onMount } from 'svelte';
   import * as d3 from 'd3';
+  import { loadMovies } from '$lib/utils/dataLoader.js';
 
   const dispatch = createEventDispatcher();
   let width = 1000;
@@ -8,7 +10,12 @@
   let data = [];
 
   onMount(async () => {
-    data = await d3.tsv('/data/last1000filmes.tsv', d3.autoType);
+    data = (await loadMovies()).map(d => ({
+      ...d
+    }));
+    
+    console.log(data);
+    console.log(d3.min(data, d => d.numVotes), d3.max(data, d => d.numVotes));
 
     const xScale = d3.scaleLinear()
       .domain([d3.min(data, d => d.averageRating), d3.max(data, d => d.averageRating)])
