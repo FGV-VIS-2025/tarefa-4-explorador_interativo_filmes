@@ -1,8 +1,7 @@
 <script>
     import { onMount } from 'svelte';
-    import { max, min, tsv } from 'd3';
+    import { max, min } from 'd3';
     import noUiSlider from 'nouislider';
-    import BarChart from '$lib/charts/BarChart.svelte';
     import HBarChart from '$lib/charts/hbarchart.svelte';
     import {loadMovies} from '$lib/utils/dataLoader';
 
