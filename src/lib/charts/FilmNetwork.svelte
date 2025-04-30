@@ -1,9 +1,8 @@
-<!-- src/lib/bloques/grafo.svelte -->
 <script>
   import { createEventDispatcher } from 'svelte';
   import { onMount } from 'svelte';
   import * as d3 from 'd3';
-  import { loadGraph } from '$lib/utils/dataLoader.js';
+  import { loadGraph, loadMovies } from '$lib/utils/dataLoader.js';
 
   let graphData = null;
   let width = 1000;
@@ -14,19 +13,22 @@
   const dispatch = createEventDispatcher();
 
   onMount(async () => {
-    const temp = await loadGraph();
-    graphData = temp;
+    const graph = await loadGraph();
+    const movies = await loadMovies();
 
-    // Se já existir um movieId no carregamento, desenha direto
+    const movieMap = new Map(movies.map(movie => [movie.tconst, movie]));
+
+    graph.nodes = graph.nodes.map(node => {
+      const movieData = movieMap.get(node.id);
+      return movieData ? { ...node, ...movieData } : node;
+    });
+
+    graphData = graph;
+
     if (movieId) {
       drawFromMovieId(movieId);
     }
   });
-
-  // Quando movieId mudar e o grafo já estiver carregado
-  $: if (movieId && graphData) {
-    drawFromMovieId(movieId);
-  }
 
   function drawFromMovieId(movieId) {
     const node = graphData.nodes.find(d => d.id === movieId);
@@ -92,13 +94,15 @@
       .attr('height', height);
 
     const sizeScale = d3.scaleLinear()
-      .domain([d3.min(graph.nodes, d => d.averageRating), d3.max(graph.nodes, d => d.averageRating)])
+      .domain([
+        d3.min(graph.nodes, d => +d.averageRating || 0),
+        d3.max(graph.nodes, d => +d.averageRating || 1)
+      ])
       .range([5, 20]);
 
-    const genres = Array.from(new Set(graph.nodes.map(d => (d.genres || '').split(',')[0])));
     const colorScale = d3.scaleOrdinal()
-      .domain(genres)
-      .range(d3.schemeCategory10);
+      .domain([0, 1])
+      .range(['#aaa', '#ffd700']); // gris para 0 Oscars, dorado para 1+
 
     const simulation = d3.forceSimulation(graph.nodes)
       .force('link', d3.forceLink(graph.links).id(d => d.id).distance(100))
@@ -116,8 +120,10 @@
       .selectAll('circle')
       .data(graph.nodes)
       .join('circle')
-      .attr('r', d => sizeScale(d.averageRating))
-      .attr('fill', d => colorScale((d.genres || '').split(',')[0]))
+      .attr('r', d => isNaN(d.averageRating) ? 5 : sizeScale(d.averageRating))
+      .attr('fill', d => colorScale(d.oscarWins > 0 ? 1 : 0))
+      .attr('stroke', d => d.id === movieId ? 'black' : null)
+      .attr('stroke-width', d => d.id === movieId ? 3 : 0)
       .call(drag(simulation));
 
     const tooltip = d3.select("#tooltip");
@@ -125,9 +131,10 @@
     node.on('mouseover', (event, d) => {
       tooltip
         .style("display", "block")
-        .html(`<strong>${d.title}</strong><br/>
-              Género: ${d.genres || 'N/A'}<br/>
+        .html(`<strong>${d.primaryTitle || d.title || 'Sin título'}</strong><br/>
+              Ganó Óscar: ${d.oscarWins > 0 ? 'Sí' : 'No'}<br/>
               Rating: ${d.averageRating || 'N/A'}<br/>
+              Género: ${d.genres || 'N/A'}<br/>
               Director(es): ${d.directors || 'N/A'}`)
         .style("left", `${event.pageX + 10}px`)
         .style("top", `${event.pageY + 10}px`);
@@ -137,6 +144,12 @@
     });
 
     simulation.on('tick', () => {
+      graph.nodes.forEach(d => {
+        const r = isNaN(d.averageRating) ? 5 : sizeScale(d.averageRating);
+        d.x = Math.max(r, Math.min(width - r, d.x));
+        d.y = Math.max(r, Math.min(height - r, d.y));
+      });
+
       link
         .attr('x1', d => d.source.x)
         .attr('y1', d => d.source.y)
@@ -172,14 +185,11 @@
   }
 </script>
 
-
 <button on:click={volver} 
-style="margin: 1rem 0; 
-background-color: #695a03; 
-padding: 0.5rem 1rem; 
-border: none; 
-cursor: pointer; 
-border-radius: 5px;">Volver</button>
+  style="margin: 1rem 0; background-color: #695a03; padding: 0.5rem 1rem; border: none; cursor: pointer; border-radius: 5px;">
+  Volver
+</button>
+
 
 <svg></svg>
 
