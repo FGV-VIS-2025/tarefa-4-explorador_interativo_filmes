@@ -2,7 +2,7 @@
 <script>
   import { createEventDispatcher, onMount } from 'svelte';
   import * as d3 from 'd3';
-  import { loadMovies } from '$lib/utils/dataLoader.js';
+  import { loadMoviesLastMovies } from '$lib/utils/dataLoader.js';
 
   const dispatch = createEventDispatcher();
   let width = 1000;
@@ -10,7 +10,7 @@
   let data = [];
 
   onMount(async () => {
-    data = (await loadMovies()).map(d => ({
+    data = (await loadMoviesLastMovies()).map(d => ({
       ...d
     }));
     

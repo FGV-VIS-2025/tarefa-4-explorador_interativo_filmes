@@ -1,4 +1,22 @@
-body, html {
+@import '/nouislider.css';
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+  }
+
+  .year-slider {
+    margin: 1em 0;
+    width: 100%;
+    max-width: 500px;
+  }
+  .noUi-connect {
+    background: #50d100;
+  }body, html {
     margin: 0;
     padding: 0;
     background: #0d0d0d;

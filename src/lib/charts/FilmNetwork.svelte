@@ -179,7 +179,7 @@ background-color: #695a03;
 padding: 0.5rem 1rem; 
 border: none; 
 cursor: pointer; 
-border-radius: 5px;">Volver</button>
+border-radius: 5px;">Back</button>
 
 <svg></svg>
 
