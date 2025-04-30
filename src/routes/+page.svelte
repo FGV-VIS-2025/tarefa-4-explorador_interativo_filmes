@@ -1,8 +1,87 @@
+<!-- routes/+page.svelte -->
 <script>
+  // Svelte imports
+  import { onMount, afterUpdate } from 'svelte';
+  import { max, min } from 'd3';
+  import noUiSlider from 'nouislider';
+  // charts
+  import HBarChart from '$lib/charts/HBarChart.svelte';
   import BubbleChart from '$lib/charts/BubbleChart.svelte';
   import FilmNetwork from '$lib/charts/FilmNetwork.svelte';
   import FilmDetails from '$lib/charts/FilmDetails.svelte';
+  // utils
+  import { loadMoviesFullData } from '$lib/utils/dataLoader';
+  import { processBarChartData } from '$lib/utils/dataManipulation.js';
 
+  let fullData = [];
+  let genres = [];
+  let nominations = [];
+
+  let selectedView = 'oscarNominations';
+  let flagSum = false;
+
+  let sliderEl;
+  let minYear, maxYear, startYear, endYear;
+  
+  function updateBarChart() {
+    const result = processBarChartData(fullData, startYear, endYear, selectedView, flagSum);
+    genres = result.genres;
+    nominations = result.nominations;
+
+    console.log('Genres:', genres);
+    console.log('Nominations:', nominations);
+  }
+
+  onMount(async () => {
+    fullData = await loadMoviesFullData();
+
+    console.log('Loaded data:', fullData);
+    console.log('Number of records:', fullData.length);
+
+    // Initialize slider
+    minYear = min(fullData, d => d.startYear);
+    maxYear = max(fullData, d => d.startYear);
+
+    startYear = minYear;
+    endYear = maxYear;
+
+    updateBarChart();
+  });
+
+  afterUpdate(() => {
+    if (sliderEl && fullData.length > 0 && !sliderEl.noUiSlider) {
+      if (sliderEl.noUiSlider) {
+        sliderEl.noUiSlider.destroy();
+      }
+
+      noUiSlider.create(sliderEl, {
+        start: [startYear, endYear],
+        connect: true,
+        step: 1,
+        range: { min: minYear, max: maxYear },
+        tooltips: [true, true],
+        format: {
+          to: Math.round,
+          from: Number
+        }
+      });
+
+      sliderEl.noUiSlider.on('update', ([low, high]) => {
+        startYear = low;
+        endYear = high;
+        updateBarChart();
+      });
+    }
+  });
+
+
+  function handleCategoryChange(event) {
+    selectedView = event.target.value;
+    console.log(`Selected View: ${selectedView}`);
+    updateBarChart();
+  }
+    
+  // Bubble chart and network chart
   let selectedMovie = null;
   let selectedData = null;
 
@@ -23,25 +102,55 @@
 <h3 style="text-align: center; color: #ffd700;">Datasets: IMDB and Oscar database</h3>
 
 {#if !selectedMovie}
-  <h2 style="text-align: center; color: #ffd700;">Analysis of movies based on ratings and Oscar awards</h2>
+  {#key selectedMovie}
+    <main class="home-container">
+      <label>
+        Select view:
+        <select on:change={handleCategoryChange}>
+          <option value="oscarNominations">Nominations</option>
+          <option value="oscarWins">Wins</option>
+        </select>
+      </label>
 
-  <div style="display: flex; justify-content: center; margin-top: 2rem;">
-    <BubbleChart on:movieSelected={handleMovieSelected} />
-  </div>
+      <label>
+        <input type="checkbox" bind:checked={flagSum} on:change={updateBarChart} />
+        Count unique movies
+      </label>
 
-  <div style="text-align: center; margin-top: 1rem; font-size: 0.9rem; color: #ccc;">
-    Click on a bubble to explore the network of related movies.
-  </div>
-{/if}
+      <div bind:this={sliderEl} class="year-slider"></div>
 
-{#if selectedMovie}
-  <h2 style="text-align: center; color: #ffd700;">Movies Network</h2>
+      {#if nominations.length}
+        <div class="chart-container">
+          <HBarChart
+            data={nominations}
+            labels={genres}
+            title="Movies by Genre"
+            xLabel="Number of indications/movies"
+            yLabel="Genre"
+          />
+        </div>
+      {:else}
+        <p>Loading data or no data available.</p>
+      {/if}
 
-  <div style="display: flex; margin-top: 2rem; gap: 2rem; justify-content: center;">
-    <div style="flex: 2; max-width: 60%;">
+      <h2>Analysis of movies based on ratings and Oscar awards</h2>
+
+      <div class="bubble-container">
+        <BubbleChart on:movieSelected={handleMovieSelected} />
+      </div>
+
+      <div class="instructions">
+        Click on a bubble to explore the network of related movies.
+      </div>
+    </main>
+  {/key}
+{:else}
+  <h2>Movies Network</h2>
+  <div class="network-view">
+    <div class="graph-container">
       <FilmNetwork movieId={selectedMovie} on:volver={BackInitialView} />
     </div>
-    <div style="flex: 1;">
+    <div class="film-details">
       <FilmDetails data={selectedData} />
     </div>
   </div>
