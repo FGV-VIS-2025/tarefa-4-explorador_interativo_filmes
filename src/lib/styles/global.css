@@ -1,0 +1,59 @@
+/* === Tema Global Escuro === */
+
+body {
+    background-color: black;
+    color: white;
+    font-family: system-ui, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  h1, h2, h3, h4, h5, h6,
+  label, p, strong, em, span,
+  li, ul, ol, a, th, td {
+    color: white;
+  }
+  
+  select {
+    font-size: 16px;
+    color: white;
+    background-color: black;
+    border: 1px solid white;
+    padding: 4px;
+    border-radius: 4px;
+  
+    /* Garante consistência visual */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+  }
+  
+  option {
+    background-color: black;
+    color: white;
+  }
+  
+  /* Estilo para a lista lateral do heatmap */
+  .movie-list {
+    background-color: black;
+    color: white;
+  }
+  
+  .movie-list ul,
+  .movie-list li {
+    background-color: black;
+    color: white;
+  }
+  
+  /* Scrollbar mais sutil no tema escuro */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: #555;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #888;
+  }
+  
