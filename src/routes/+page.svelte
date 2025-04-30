@@ -3,12 +3,13 @@
   // Svelte imports
   import { onMount, afterUpdate } from 'svelte';
   import { max, min } from 'd3';
-  import noUiSlider from 'nouislider';
   // charts
   import HBarChart from '$lib/charts/HBarChart.svelte';
   import BubbleChart from '$lib/charts/BubbleChart.svelte';
   import FilmNetwork from '$lib/charts/FilmNetwork.svelte';
   import FilmDetails from '$lib/charts/FilmDetails.svelte';
+  // components
+  import Slider from '$lib/components/Slider.svelte';
   // utils
   import { loadMoviesFullData } from '$lib/utils/dataLoader';
   import { processBarChartData } from '$lib/utils/dataManipulation.js';
@@ -20,7 +21,6 @@
   let selectedView = 'oscarNominations';
   let flagSum = false;
 
-  let sliderEl;
   let minYear, maxYear, startYear, endYear;
   
   function updateBarChart() {
@@ -47,33 +47,6 @@
 
     updateBarChart();
   });
-
-  afterUpdate(() => {
-    if (sliderEl && fullData.length > 0 && !sliderEl.noUiSlider) {
-      if (sliderEl.noUiSlider) {
-        sliderEl.noUiSlider.destroy();
-      }
-
-      noUiSlider.create(sliderEl, {
-        start: [startYear, endYear],
-        connect: true,
-        step: 1,
-        range: { min: minYear, max: maxYear },
-        tooltips: [true, true],
-        format: {
-          to: Math.round,
-          from: Number
-        }
-      });
-
-      sliderEl.noUiSlider.on('update', ([low, high]) => {
-        startYear = low;
-        endYear = high;
-        updateBarChart();
-      });
-    }
-  });
-
 
   function handleCategoryChange(event) {
     selectedView = event.target.value;
@@ -117,7 +90,17 @@
         Count unique movies
       </label>
 
-      <div bind:this={sliderEl} class="year-slider"></div>
+      <Slider
+        min={minYear}
+        max={maxYear}
+        start={startYear}
+        end={endYear}
+        on:rangeChanged={(e) => {
+          startYear = e.detail.start;
+          endYear = e.detail.end;
+          updateBarChart();
+        }}
+      />
 
       {#if nominations.length}
         <div class="chart-container">

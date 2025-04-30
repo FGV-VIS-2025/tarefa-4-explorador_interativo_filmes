@@ -2,7 +2,6 @@
 <script>
     import { onMount, afterUpdate } from 'svelte';
     import * as d3 from 'd3';
-    import '$lib/styles/barchart.css';
 
     export let data = [];
     export let labels = [];
