@@ -4,9 +4,18 @@
   import * as d3 from 'd3';
   import { loadMoviesLastMovies } from '$lib/utils/dataLoader.js';
 
+  const chartConfig = {
+        width: 1000,
+        height: 700,
+        margin: { top: 20, right: 40, bottom: 50, left: 60 }
+  };
+
+  const { width, height, margin } = chartConfig;
+  const innerWidth  = width  - margin.left - margin.right;
+  const innerHeight = height - margin.top  - margin.bottom;
+
   const dispatch = createEventDispatcher();
-  let width = 1000;
-  let height = 700;
+ 
   let data = [];
   let svgEl;
   let tooltipEl;
@@ -16,7 +25,7 @@
 
     const xScale = d3.scaleLinear()
       .domain([d3.min(data, d => d.averageRating), d3.max(data, d => d.averageRating)])
-      .range([50, width - 50]);
+      .range([0, innerWidth]);
 
     const sizeScale = d3.scaleSqrt()
       .domain([d3.min(data, d => d.numVotes), d3.max(data, d => d.numVotes)])
@@ -28,13 +37,13 @@
 
     data.forEach(d => {
       d.x = xScale(d.averageRating);
-      d.y = height / 2;
+      d.y = innerHeight / 2;
       d.radius = sizeScale(d.numVotes);
     });
 
     const simulation = d3.forceSimulation(data)
       .force("x", d3.forceX(d => d.x).strength(1))
-      .force("y", d3.forceY(height / 2).strength(0.05))
+      .force("y", d3.forceY(innerHeight / 2).strength(0.05))
       .force("collision", d3.forceCollide().radius(d => d.radius + 2))
       .stop();
 
@@ -44,9 +53,12 @@
       .attr('width', width)
       .attr('height', height);
 
+    const g = svg.append('g')
+      .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
     const tooltip = d3.select(tooltipEl);
 
-    svg.selectAll('circle')
+    g.selectAll('circle')
       .data(data)
       .enter()
       .append('circle')
@@ -70,15 +82,15 @@
         dispatch('movieSelected', { id: d.tconst, data: d });
       });
 
-    svg.append('g')
-      .attr('transform', `translate(0, ${height - 30})`)
+    g.append('g')
+      .attr('transform', `translate(0, ${innerHeight})`)
       .call(d3.axisBottom(xScale));
 
-    svg.append('text')
+    g.append('text')
       .attr('class', 'x label')
       .attr('text-anchor', 'middle')
-      .attr('x', width / 2)
-      .attr('y', height - 5)
+      .attr('x', innerWidth / 2)
+      .attr('y', innerHeight + 40)
       .attr('fill', '#ffd700')
       .text('Average Rating (IMDb)');
   });
