@@ -181,3 +181,16 @@ button:hover {
   margin-top: 0;
   color: #ffd700;
 }
+
+.chart-pair-container {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap; /* permite quebrar para mobile */
+}
+
+.chart-pair-container .chart-container {
+  flex: 1 1 45%;
+  display: flex;
+  justify-content: center;
+}

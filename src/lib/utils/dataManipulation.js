@@ -17,15 +17,15 @@ export function processBarChartData(fullData, startYear, endYear, selectedView, 
     });
 
     const genres = Object.keys(genreCounts);
-    const nominations = Object.values(genreCounts);
+    const values = Object.values(genreCounts);
 
     const sorted = genres
-        .map((genre, i) => ({ genre, value: nominations[i] }))
+        .map((genre, i) => ({ genre, value: values[i] }))
         .sort((a, b) => b.value - a.value)
         .slice(0, 10);
 
     return {
         genres: sorted.map(d => d.genre),
-        nominations: sorted.map(d => d.value)
+        values: sorted.map(d => d.value)
     };
 }
