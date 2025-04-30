@@ -1,4 +1,4 @@
-<!-- src/lib/bloques/bubble.svelte -->
+<!-- src/lib/charts/BubbleChart.svelte -->
 <script>
   import { createEventDispatcher, onMount } from 'svelte';
   import * as d3 from 'd3';

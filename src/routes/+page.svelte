@@ -1,3 +1,4 @@
+<!-- +page.svelte -->
 <script>
   // Svelte imports
   import { onMount } from 'svelte';
@@ -91,31 +92,31 @@
 <h1 style="text-align: center; color: #ffd700;">Interactive Movie Explorer</h1>
 <h3 style="text-align: center; color: #ffd700;">Datasets: IMDB and Oscar database</h3>
 
-<main class="container" >
-  <label>
-      Select view:
-      <select on:change={handleCategoryChange}>
-          <option value="oscarNominations">Nominations</option>
-          <option value="oscarWins">Wins</option>
-      </select>
-  </label>
-
-  <label>
-      <input type="checkbox" bind:checked={flagSum} on:change={updateBarChart} />
-      Count unique movies
-  </label>  
-  
-  <div bind:this={sliderEl} class="year-slider"></div>
-
-  {#if nominations.length}
-      <HBarChart data={nominations} labels={genres} title="titulo" xLabel="Number of indications/movies" yLabel="Genre" />
-  {:else}
-      <p>Carregando ou nenhum dado.</p>
-  {/if}   
-
-</main>
-
+<!-- First view -->
 {#if !selectedMovie}
+  <main class="container" >
+    <label>
+        Select view:
+        <select on:change={handleCategoryChange}>
+            <option value="oscarNominations">Nominations</option>
+            <option value="oscarWins">Wins</option>
+        </select>
+    </label>
+
+    <label>
+        <input type="checkbox" bind:checked={flagSum} on:change={updateBarChart} />
+        Count unique movies
+    </label>  
+    
+    <div bind:this={sliderEl} class="year-slider"></div>
+
+    {#if nominations.length}
+        <HBarChart data={nominations} labels={genres} title="titulo" xLabel="Number of indications/movies" yLabel="Genre" />
+    {:else}
+        <p>Carregando ou nenhum dado.</p>
+    {/if}   
+
+  </main>
   <h2 style="text-align: center; color: #ffd700;">Analysis of movies based on ratings and Oscar awards</h2>
 
   <div style="display: flex; justify-content: center; margin-top: 2rem;">
@@ -127,6 +128,7 @@
   </div>
 {/if}
 
+<!-- Second view -->
 {#if selectedMovie}
   <h2 style="text-align: center; color: #ffd700;">Movies Network</h2>
 

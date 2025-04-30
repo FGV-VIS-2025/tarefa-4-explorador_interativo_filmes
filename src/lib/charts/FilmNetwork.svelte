@@ -1,4 +1,4 @@
-<!-- src/lib/bloques/grafo.svelte -->
+<!-- src/lib/charts/FilmNetwork.svelte -->
 <script>
   import { createEventDispatcher } from 'svelte';
   import { onMount } from 'svelte';

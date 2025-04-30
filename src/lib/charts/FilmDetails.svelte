@@ -1,3 +1,4 @@
+<!-- src/lib/charts/FilmDetails.svelte -->
 <script>
     export let data;
 </script>

@@ -1,3 +1,4 @@
+<!-- src/lib/charts/HBarChart.svelte -->
 <script>
     import { onMount, afterUpdate } from 'svelte';
     import * as d3 from 'd3';
