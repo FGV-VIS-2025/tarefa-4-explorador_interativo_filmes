@@ -8,14 +8,11 @@
   let width = 1000;
   let height = 700;
   let data = [];
+  let svgEl;
+  let tooltipEl;
 
   onMount(async () => {
-    data = (await loadMoviesLastMovies()).map(d => ({
-      ...d
-    }));
-    
-    console.log(data);
-    console.log(d3.min(data, d => d.numVotes), d3.max(data, d => d.numVotes));
+    data = (await loadMoviesLastMovies()).map(d => ({ ...d }));
 
     const xScale = d3.scaleLinear()
       .domain([d3.min(data, d => d.averageRating), d3.max(data, d => d.averageRating)])
@@ -43,11 +40,11 @@
 
     for (let i = 0; i < 300; ++i) simulation.tick();
 
-    const svg = d3.select('svg')
+    const svg = d3.select(svgEl)
       .attr('width', width)
       .attr('height', height);
 
-    const tooltip = d3.select("#tooltip");
+    const tooltip = d3.select(tooltipEl);
 
     svg.selectAll('circle')
       .data(data)
@@ -60,23 +57,22 @@
       .attr('stroke', '#333')
       .attr('stroke-width', 0.5)
       .on('mouseover', (event, d) => {
-          tooltip.style("display", "block")
-            .html(`<strong>${d.primaryTitle}</strong>`)
-            .style("left", (event.pageX + 10) + "px")
-            .style("top", (event.pageY + 10) + "px");
+        tooltip
+          .style("display", "block")
+          .html(`<strong>${d.primaryTitle}</strong>`)
+          .style("left", `${event.pageX + 10}px`)
+          .style("top", `${event.pageY + 10}px`);
       })
       .on('mouseout', () => {
-          tooltip.style("display", "none");
+        tooltip.style("display", "none");
       })
       .on('click', (event, d) => {
-          dispatch('movieSelected', { id: d.tconst, data: d });
+        dispatch('movieSelected', { id: d.tconst, data: d });
       });
-
-    const xAxis = d3.axisBottom(xScale);
 
     svg.append('g')
       .attr('transform', `translate(0, ${height - 30})`)
-      .call(xAxis);
+      .call(d3.axisBottom(xScale));
 
     svg.append('text')
       .attr('class', 'x label')
@@ -89,6 +85,6 @@
 </script>
 
 <div class="chart-container">
-  <svg></svg>
-  <div id="tooltip" style="position: absolute; display: none;"></div>
+  <svg bind:this={svgEl} class="bubble-chart"></svg>
+  <div bind:this={tooltipEl} class="tooltip-bubble" style="position: absolute; display: none;"></div>
 </div>

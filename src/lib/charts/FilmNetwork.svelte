@@ -1,7 +1,6 @@
 <!-- src/lib/charts/FilmNetwork.svelte -->
 <script>
-  import { createEventDispatcher } from 'svelte';
-  import { onMount } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import * as d3 from 'd3';
   import { loadGraph } from '$lib/utils/dataLoader.js';
 
@@ -9,21 +8,16 @@
   let width = 1000;
   let height = 600;
   let svgElement;
+  let tooltipElement;
 
   export let movieId;
   const dispatch = createEventDispatcher();
 
   onMount(async () => {
-    const temp = await loadGraph();
-    graphData = temp;
-
-    // Se já existir um movieId no carregamento, desenha direto
-    if (movieId) {
-      drawFromMovieId(movieId);
-    }
+    graphData = await loadGraph();
+    if (movieId) drawFromMovieId(movieId);
   });
 
-  // Quando movieId mudar e o grafo já estiver carregado
   $: if (movieId && graphData) {
     drawFromMovieId(movieId);
   }
@@ -45,9 +39,7 @@
     }));
 
     const adjacency = new Map();
-    for (const node of nodesInComponent) {
-      adjacency.set(node.id, []);
-    }
+    for (const node of nodesInComponent) adjacency.set(node.id, []);
     for (const link of linksInComponent) {
       adjacency.get(link.source).push(link.target);
       adjacency.get(link.target).push(link.source);
@@ -80,14 +72,13 @@
       weight: d.weight
     }));
 
-    const filteredGraph = { nodes, links };
-    drawGraph(filteredGraph);
+    drawGraph({ nodes, links });
   }
 
   function drawGraph(graph) {
-    d3.select('svg').selectAll('*').remove();
+    d3.select(svgElement).selectAll('*').remove();
 
-    const svg = d3.select('svg')
+    const svg = d3.select(svgElement)
       .attr('width', width)
       .attr('height', height);
 
@@ -120,15 +111,15 @@
       .attr('fill', d => colorScale((d.genres || '').split(',')[0]))
       .call(drag(simulation));
 
-    const tooltip = d3.select("#tooltip");
+    const tooltip = d3.select(tooltipElement);
 
     node.on('mouseover', (event, d) => {
       tooltip
         .style("display", "block")
         .html(`<strong>${d.title}</strong><br/>
-              Género: ${d.genres || 'N/A'}<br/>
+              Gênero: ${d.genres || 'N/A'}<br/>
               Rating: ${d.averageRating || 'N/A'}<br/>
-              Director(es): ${d.directors || 'N/A'}`)
+              Direção: ${d.directors || 'N/A'}`)
         .style("left", `${event.pageX + 10}px`)
         .style("top", `${event.pageY + 10}px`);
     })
@@ -172,29 +163,16 @@
   }
 </script>
 
-
 <button on:click={volver} 
-style="margin: 1rem 0; 
-background-color: #695a03; 
-padding: 0.5rem 1rem; 
-border: none; 
-cursor: pointer; 
-border-radius: 5px;">Back</button>
+  style="margin: 1rem 0; 
+  background-color: #695a03; 
+  padding: 0.5rem 1rem; 
+  border: none; 
+  cursor: pointer; 
+  border-radius: 5px;">
+  Back
+</button>
 
-<svg></svg>
+<svg bind:this={svgElement} class="film-network"></svg>
 
-<div
-  id="tooltip"
-  style="
-    position: absolute;
-    display: none;
-    background: white;
-    border: 1px solid #ccc;
-    padding: 5px;
-    pointer-events: none;
-    color: #000;
-    border-radius: 4px;
-    font-size: 12px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-    z-index: 10;">
-</div>
+<div bind:this={tooltipElement} class="tooltip-network"></div>

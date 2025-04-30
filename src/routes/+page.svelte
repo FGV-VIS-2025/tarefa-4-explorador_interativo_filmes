@@ -1,4 +1,4 @@
-<!-- +page.svelte -->
+<!-- routes/+page.svelte -->
 <script>
   // Svelte imports
   import { onMount } from 'svelte';
@@ -92,51 +92,56 @@
 <h1 style="text-align: center; color: #ffd700;">Interactive Movie Explorer</h1>
 <h3 style="text-align: center; color: #ffd700;">Datasets: IMDB and Oscar database</h3>
 
-<!-- First view -->
 {#if !selectedMovie}
-  <main class="container" >
-    <label>
+  {#key selectedMovie}
+    <main class="home-container">
+      <label>
         Select view:
         <select on:change={handleCategoryChange}>
-            <option value="oscarNominations">Nominations</option>
-            <option value="oscarWins">Wins</option>
+          <option value="oscarNominations">Nominations</option>
+          <option value="oscarWins">Wins</option>
         </select>
-    </label>
+      </label>
 
-    <label>
+      <label>
         <input type="checkbox" bind:checked={flagSum} on:change={updateBarChart} />
         Count unique movies
-    </label>  
-    
-    <div bind:this={sliderEl} class="year-slider"></div>
+      </label>
 
-    {#if nominations.length}
-        <HBarChart data={nominations} labels={genres} title="titulo" xLabel="Number of indications/movies" yLabel="Genre" />
-    {:else}
-        <p>Carregando ou nenhum dado.</p>
-    {/if}   
+      <div bind:this={sliderEl} class="year-slider"></div>
 
-  </main>
-  <h2 style="text-align: center; color: #ffd700;">Analysis of movies based on ratings and Oscar awards</h2>
+      {#if nominations.length}
+        <div class="chart-container">
+          <HBarChart
+            data={nominations}
+            labels={genres}
+            title="Movies by Genre"
+            xLabel="Number of indications/movies"
+            yLabel="Genre"
+          />
+        </div>
+      {:else}
+        <p>Loading data or no data available.</p>
+      {/if}
 
-  <div style="display: flex; justify-content: center; margin-top: 2rem;">
-    <BubbleChart on:movieSelected={handleMovieSelected} />
-  </div>
+      <h2>Analysis of movies based on ratings and Oscar awards</h2>
 
-  <div style="text-align: center; margin-top: 1rem; font-size: 0.9rem; color: #ccc;">
-    Click on a bubble to explore the network of related movies.
-  </div>
-{/if}
+      <div class="bubble-container">
+        <BubbleChart on:movieSelected={handleMovieSelected} />
+      </div>
 
-<!-- Second view -->
-{#if selectedMovie}
-  <h2 style="text-align: center; color: #ffd700;">Movies Network</h2>
-
-  <div style="display: flex; margin-top: 2rem; gap: 2rem; justify-content: center;">
-    <div style="flex: 2; max-width: 60%;">
+      <div class="instructions">
+        Click on a bubble to explore the network of related movies.
+      </div>
+    </main>
+  {/key}
+{:else}
+  <h2>Movies Network</h2>
+  <div class="network-view">
+    <div class="graph-container">
       <FilmNetwork movieId={selectedMovie} on:volver={BackInitialView} />
     </div>
-    <div style="flex: 1;">
+    <div class="film-details">
       <FilmDetails data={selectedData} />
     </div>
   </div>
