@@ -15,21 +15,29 @@
   import { processBarChartData } from '$lib/utils/dataManipulation.js';
 
   let fullData = [];
-  let genres = [];
-  let nominations = [];
+  let wins_genres = [], wins_values= [];
+  let nominations_genres = [], nominations_values = [];
 
-  let selectedView = 'oscarNominations';
   let flagSum = false;
 
   let minYear, maxYear, startYear, endYear;
   
   function updateBarChart() {
-    const result = processBarChartData(fullData, startYear, endYear, selectedView, flagSum);
-    genres = result.genres;
-    nominations = result.nominations;
+    console.log('Updating bar chart with selected years:', startYear, endYear);
 
-    console.log('Genres:', genres);
-    console.log('Nominations:', nominations);
+    const result1 = processBarChartData(fullData, startYear, endYear, 'oscarNominations', flagSum);
+    nominations_genres = result1.genres;
+    nominations_values = result1.values;
+
+    console.log('Genres nominations:', nominations_genres);
+    console.log('Nominations:', nominations_values);
+
+    const result2 = processBarChartData(fullData, startYear, endYear, 'oscarWins', flagSum);
+    wins_genres = result2.genres;
+    wins_values = result2.values;
+
+    console.log('Genres nominations:', wins_genres);
+    console.log('Nominations:', wins_values);
   }
 
   onMount(async () => {
@@ -41,19 +49,12 @@
     // Initialize slider
     minYear = min(fullData, d => d.startYear);
     maxYear = max(fullData, d => d.startYear);
-
     startYear = minYear;
     endYear = maxYear;
 
     updateBarChart();
   });
 
-  function handleCategoryChange(event) {
-    selectedView = event.target.value;
-    console.log(`Selected View: ${selectedView}`);
-    updateBarChart();
-  }
-    
   // Bubble chart and network chart
   let selectedMovie = null;
   let selectedData = null;
@@ -77,13 +78,6 @@
 {#if !selectedMovie}
   {#key selectedMovie}
     <main class="home-container">
-      <label>
-        Select view:
-        <select on:change={handleCategoryChange}>
-          <option value="oscarNominations">Nominations</option>
-          <option value="oscarWins">Wins</option>
-        </select>
-      </label>
 
       <label>
         <input type="checkbox" bind:checked={flagSum} on:change={updateBarChart} />
@@ -102,19 +96,32 @@
         }}
       />
 
-      {#if nominations.length}
-        <div class="chart-container">
-          <HBarChart
-            data={nominations}
-            labels={genres}
-            title="Movies by Genre"
-            xLabel="Number of indications/movies"
-            yLabel="Genre"
-          />
+      <!-- Cria os bar charts aqui -->
+      {#if nominations_genres.length && wins_genres.length}
+        <div class="chart-pair-container">
+          <div class="chart-container">
+            <HBarChart
+              data={nominations_values}
+              labels={nominations_genres}
+              title="Movies by Genre"
+              xLabel="Number of Nominations"
+              yLabel="Genre"
+            />
+          </div>
+          <div class="chart-container">
+            <HBarChart
+              data={wins_values}
+              labels={wins_genres}
+              title="Movies by Genre"
+              xLabel="Number of Wins"
+              yLabel="Genre"
+            />
+          </div>
         </div>
       {:else}
         <p>Loading data or no data available.</p>
       {/if}
+    
 
       <h2>Analysis of movies based on ratings and Oscar awards</h2>
 
