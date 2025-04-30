@@ -1,7 +1,7 @@
 <!-- routes/+page.svelte -->
 <script>
   // Svelte imports
-  import { onMount } from 'svelte';
+  import { onMount, afterUpdate } from 'svelte';
   import { max, min } from 'd3';
   import noUiSlider from 'nouislider';
   // charts
@@ -45,26 +45,35 @@
     startYear = minYear;
     endYear = maxYear;
 
-    noUiSlider.create(sliderEl, {
-      start: [minYear, maxYear],
-      connect: true,
-      step: 1,
-      range: { min: minYear, max: maxYear },
-      tooltips: [true, true],
-      format: {
-      to: Math.round,
-      from: Number
-      }
-    });
-
-    sliderEl.noUiSlider.on('update', ([low, high]) => {
-      startYear = low;
-      endYear = high;
-      updateBarChart();
-    });
-
     updateBarChart();
   });
+
+  afterUpdate(() => {
+    if (sliderEl && fullData.length > 0 && !sliderEl.noUiSlider) {
+      if (sliderEl.noUiSlider) {
+        sliderEl.noUiSlider.destroy();
+      }
+
+      noUiSlider.create(sliderEl, {
+        start: [startYear, endYear],
+        connect: true,
+        step: 1,
+        range: { min: minYear, max: maxYear },
+        tooltips: [true, true],
+        format: {
+          to: Math.round,
+          from: Number
+        }
+      });
+
+      sliderEl.noUiSlider.on('update', ([low, high]) => {
+        startYear = low;
+        endYear = high;
+        updateBarChart();
+      });
+    }
+  });
+
 
   function handleCategoryChange(event) {
     selectedView = event.target.value;
