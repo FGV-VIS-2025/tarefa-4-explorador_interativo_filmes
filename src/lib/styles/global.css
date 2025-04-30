@@ -113,6 +113,24 @@ button:hover {
   fill: #50d100;
 }
 
+.hbar-chart .chart-title {
+  font-size: 16px;
+  font-weight: bold;
+  text-anchor: middle;
+  fill: white;
+}
+
+.hbar-chart .axis-label {
+  font-size: 12px;
+  fill: white;
+}
+
+.hbar-chart .axis-label-x,
+.hbar-chart .axis-label-y {
+  text-anchor: middle;
+  fill: white;
+}
+
 /* Escopo opcional para o BubbleChart */
 .bubble-chart circle {
   cursor: pointer;
