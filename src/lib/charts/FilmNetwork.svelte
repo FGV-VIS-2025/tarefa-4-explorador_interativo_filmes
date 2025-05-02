@@ -124,8 +124,8 @@
       .join('circle')
       .attr('r', d => isNaN(d.averageRating) ? 5 : sizeScale(d.averageRating))
       .attr('fill', d => colorScale(d.oscarWins > 0 ? 1 : 0))
-      .attr('stroke', d => d.id === movieId ? 'black' : null)
-      .attr('stroke-width', d => d.id === movieId ? 3 : 0)
+      .attr('stroke', d => d.id === movieId ? 'red' : null)
+      .attr('stroke-width', d => d.id === movieId ? 6 : 0)
       .call(drag(simulation));
 
     const tooltip = d3.select(tooltipElement);
