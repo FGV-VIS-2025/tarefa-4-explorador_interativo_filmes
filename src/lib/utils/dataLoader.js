@@ -12,10 +12,13 @@ export async function loadMoviesLastMovies() {
 
 	const data = await tsv(`${base}/data/last1000filmes.tsv`, row => ({
         ...row,
-        averageRating: +row.averageRating,
-        numVotes: +row.numVotes,
-        oscarNominations: +row.oscarNominations,
-        oscarWins: +row.oscarWins,
+		startYear: +row.startYear,
+		runtimeMinutes: +row.runtimeMinutes,
+		averageRating: +row.averageRating,
+		numVotes: +row.numVotes,
+		oscarNominations: +row.oscarNominations,
+		oscarWins: +row.oscarWins,
+		genres: row.genres ? row.genres.split(',') : []
     }));
 
 	cachedMovies = data;
