@@ -10,6 +10,7 @@
   import FilmDetails from '$lib/charts/FilmDetails.svelte';
   // components
   import Slider from '$lib/components/Slider.svelte';
+  import FilmSearch from '$lib/components/FilmSearch.svelte';
   // utils
   import { /*loadMoviesFullData,*/ loadMoviesLastMovies } from '$lib/utils/dataLoader';
   import { processBarChartData } from '$lib/utils/dataManipulation.js';
@@ -21,6 +22,13 @@
 
   let flagSum = false;
   let minYear, maxYear, startYear, endYear;
+
+  // Bubble chart and network chart
+  let selectedMovie = null;
+  let selectedData = null;
+
+  let searchQuery = '';
+  let highlightedMovieId = null;
 
   // Filtro reativo
   $: filteredData = fullData.filter(
@@ -61,11 +69,8 @@
     updateBarChart();
   });
 
-  // Bubble chart and network chart
-  let selectedMovie = null;
-  let selectedData = null;
-
   function handleMovieSelected(event) {
+    highlightedMovieId = null;
     selectedMovie = event.detail.id;
     selectedData = event.detail.data;
     console.log(`Selected Movie ID: ${selectedMovie}`);
@@ -131,7 +136,22 @@
     <h2>Analysis of movies based on ratings and Oscar awards</h2>
 
     <div class="bubble-container">
-      <BubbleChart fullData={fullData} data={filteredData} on:movieSelected={handleMovieSelected} />
+      <FilmSearch
+        options={fullData.filter(d => d.primaryTitle.toLowerCase().includes(searchQuery.toLowerCase()))}
+        bind:query={searchQuery}
+        on:select={(e) => {
+          console.log(`Selected movie: ${e.detail.id}`);
+          highlightedMovieId = e.detail.id;
+          console.log(`Selected movie: ${e.detail.id}`);
+        }}
+      />
+
+      <BubbleChart 
+        fullData={fullData} 
+        data={filteredData} 
+        highlightedMovieId={highlightedMovieId}
+        on:movieSelected={handleMovieSelected} 
+      />
     </div>
 
     <div class="instructions">
