@@ -17,7 +17,7 @@
 }
 
 .noUi-connect {
-  background: #50d100;
+  background: #fff570;
 }
 
 body, html {
@@ -110,7 +110,7 @@ button:hover {
 
 /* Escopo das barras do HBarChart */
 .hbar-chart .bar-hbar {
-  fill: #50d100;
+  fill: #ffd036;
 }
 
 .hbar-chart .chart-title {
