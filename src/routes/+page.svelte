@@ -11,28 +11,33 @@
   // components
   import Slider from '$lib/components/Slider.svelte';
   // utils
-  import { loadMoviesFullData } from '$lib/utils/dataLoader';
+  import { /*loadMoviesFullData,*/ loadMoviesLastMovies } from '$lib/utils/dataLoader';
   import { processBarChartData } from '$lib/utils/dataManipulation.js';
 
   let fullData = [];
+  let filteredData = [];
   let wins_genres = [], wins_values= [];
   let nominations_genres = [], nominations_values = [];
 
   let flagSum = false;
-
   let minYear, maxYear, startYear, endYear;
-  
+
+  // Filtro reativo
+  $: filteredData = fullData.filter(
+    d => d.startYear >= startYear && d.startYear <= endYear
+  );
+
   function updateBarChart() {
     console.log('Updating bar chart with selected years:', startYear, endYear);
 
-    const result1 = processBarChartData(fullData, startYear, endYear, 'oscarNominations', flagSum);
+    const result1 = processBarChartData(filteredData, startYear, endYear, 'oscarNominations', flagSum);
     nominations_genres = result1.genres;
     nominations_values = result1.values;
 
     console.log('Genres nominations:', nominations_genres);
     console.log('Nominations:', nominations_values);
 
-    const result2 = processBarChartData(fullData, startYear, endYear, 'oscarWins', flagSum);
+    const result2 = processBarChartData(filteredData, startYear, endYear, 'oscarWins', flagSum);
     wins_genres = result2.genres;
     wins_values = result2.values;
 
@@ -41,7 +46,8 @@
   }
 
   onMount(async () => {
-    fullData = await loadMoviesFullData();
+    // fullData = await loadMoviesFullData();
+    fullData = await loadMoviesLastMovies();
 
     console.log('Loaded data:', fullData);
     console.log('Number of records:', fullData.length);
@@ -76,64 +82,62 @@
 <h3 style="text-align: center; color: #ffd700;">Datasets: IMDB and Oscar database</h3>
 
 {#if !selectedMovie}
-  {#key selectedMovie}
-    <main class="home-container">
+  <main class="home-container">
 
-      <label>
-        <input type="checkbox" bind:checked={flagSum} on:change={updateBarChart} />
-        Count unique movies
-      </label>
+    <label>
+      <input type="checkbox" bind:checked={flagSum} on:change={updateBarChart} />
+      Count unique movies
+    </label>
 
-      <Slider
-        min={minYear}
-        max={maxYear}
-        start={startYear}
-        end={endYear}
-        on:rangeChanged={(e) => {
-          startYear = e.detail.start;
-          endYear = e.detail.end;
-          updateBarChart();
-        }}
-      />
+    <Slider
+      min={minYear}
+      max={maxYear}
+      start={startYear}
+      end={endYear}
+      on:rangeChanged={(e) => {
+        startYear = e.detail.start;
+        endYear = e.detail.end;
+        updateBarChart();
+      }}
+    />
 
-      <!-- Cria os bar charts aqui -->
-      {#if nominations_genres.length && wins_genres.length}
-        <div class="chart-pair-container">
-          <div class="chart-container">
-            <HBarChart
-              data={nominations_values}
-              labels={nominations_genres}
-              title="Movies by Genre"
-              xLabel="Number of Nominations"
-              yLabel="Genre"
-            />
-          </div>
-          <div class="chart-container">
-            <HBarChart
-              data={wins_values}
-              labels={wins_genres}
-              title="Movies by Genre"
-              xLabel="Number of Wins"
-              yLabel="Genre"
-            />
-          </div>
+    <!-- Cria os bar charts aqui -->
+    {#if nominations_genres.length && wins_genres.length}
+      <div class="chart-pair-container">
+        <div class="chart-container">
+          <HBarChart
+            data={nominations_values}
+            labels={nominations_genres}
+            title="Movies by Genre"
+            xLabel="Number of Nominations"
+            yLabel="Genre"
+          />
         </div>
-      {:else}
-        <p>Loading data or no data available.</p>
-      {/if}
-    
-
-      <h2>Analysis of movies based on ratings and Oscar awards</h2>
-
-      <div class="bubble-container">
-        <BubbleChart on:movieSelected={handleMovieSelected} />
+        <div class="chart-container">
+          <HBarChart
+            data={wins_values}
+            labels={wins_genres}
+            title="Movies by Genre"
+            xLabel="Number of Wins"
+            yLabel="Genre"
+          />
+        </div>
       </div>
+    {:else}
+      <p>Loading data or no data available.</p>
+    {/if}
+  
 
-      <div class="instructions">
-        Click on a bubble to explore the network of related movies.
-      </div>
-    </main>
-  {/key}
+    <h2>Analysis of movies based on ratings and Oscar awards</h2>
+
+    <div class="bubble-container">
+      <BubbleChart fullData={fullData} data={filteredData} on:movieSelected={handleMovieSelected} />
+    </div>
+
+    <div class="instructions">
+      Click on a bubble to explore the network of related movies.
+    </div>
+  </main>
 {:else}
   <h2>Movies Network</h2>
   <div class="network-view">

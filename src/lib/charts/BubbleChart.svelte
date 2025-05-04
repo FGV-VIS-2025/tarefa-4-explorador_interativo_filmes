@@ -1,102 +1,121 @@
 <!-- src/lib/charts/BubbleChart.svelte -->
 <script>
-  import { createEventDispatcher, onMount } from 'svelte';
+  import { onMount, createEventDispatcher } from 'svelte';
   import * as d3 from 'd3';
-  import { loadMoviesLastMovies } from '$lib/utils/dataLoader.js';
 
-  const chartConfig = {
-        width: 1000,
-        height: 700,
-        margin: { top: 20, right: 40, bottom: 50, left: 60 }
-  };
-
-  const { width, height, margin } = chartConfig;
-  const innerWidth  = width  - margin.left - margin.right;
-  const innerHeight = height - margin.top  - margin.bottom;
+  export let fullData = [];
+  export let data = [];
 
   const dispatch = createEventDispatcher();
- 
-  let data = [];
-  let svgEl;
-  let tooltipEl;
 
-  onMount(async () => {
-    data = (await loadMoviesLastMovies()).map(d => ({ ...d }));
+  // Constantes
+  const M  = { top: 20, right: 40, bottom: 50, left: 60 };
+  const W  = 1000;
+  const H  = 700;
+  const IW = W - M.left - M.right;
+  const IH = H - M.top  - M.bottom;
 
-    const xScale = d3.scaleLinear()
-      .domain([d3.min(data, d => d.averageRating), d3.max(data, d => d.averageRating)])
-      .range([0, innerWidth]);
+  // Escalas
+  const xScale  = d3.scaleLinear().range([0, IW]);
+  const radiusScale  = d3.scaleSqrt().range([3, 20]);
+  const colorScale  = d3.scaleOrdinal().domain([0, 1]).range(['#aaa', '#ffd700']);
 
-    const sizeScale = d3.scaleSqrt()
-      .domain([d3.min(data, d => d.numVotes), d3.max(data, d => d.numVotes)])
-      .range([3, 20]);
+  // Variáveis de DOM
+  let svgEl, tipEl, g, xAxis;
 
-    const colorScale = d3.scaleOrdinal()
-      .domain([0, 1])
-      .range(['#aaa', '#ffd700']);
+  const layout = new Map();
+  let layoutReady = false;
 
-    data.forEach(d => {
-      d.x = xScale(d.averageRating);
-      d.y = innerHeight / 2;
-      d.radius = sizeScale(d.numVotes);
-    });
+  // Desenho estático (eixo, rótulos, etc.)
+  let mounted = false;
+  onMount(() => {
+    mounted = true;
+    const svg = d3.select(svgEl).attr('viewBox', `0 0 ${W} ${H}`);
 
-    const simulation = d3.forceSimulation(data)
-      .force("x", d3.forceX(d => d.x).strength(1))
-      .force("y", d3.forceY(innerHeight / 2).strength(0.05))
-      .force("collision", d3.forceCollide().radius(d => d.radius + 2))
-      .stop();
-
-    for (let i = 0; i < 300; ++i) simulation.tick();
-
-    const svg = d3.select(svgEl)
-      .attr('width', width)
-      .attr('height', height);
-
-    const g = svg.append('g')
-      .attr('transform', `translate(${margin.left}, ${margin.top})`);
-
-    const tooltip = d3.select(tooltipEl);
-
-    g.selectAll('circle')
-      .data(data)
-      .enter()
-      .append('circle')
-      .attr('cx', d => d.x)
-      .attr('cy', d => d.y)
-      .attr('r', d => d.radius)
-      .attr('fill', d => colorScale(d.oscarWins > 0 ? 1 : 0))
-      .attr('stroke', '#333')
-      .attr('stroke-width', 0.5)
-      .on('mouseover', (event, d) => {
-        tooltip
-          .style("display", "block")
-          .html(`<strong>${d.primaryTitle}</strong>`)
-          .style("left", `${event.pageX + 10}px`)
-          .style("top", `${event.pageY + 10}px`);
-      })
-      .on('mouseout', () => {
-        tooltip.style("display", "none");
-      })
-      .on('click', (event, d) => {
-        dispatch('movieSelected', { id: d.tconst, data: d });
-      });
-
-    g.append('g')
-      .attr('transform', `translate(0, ${innerHeight})`)
-      .call(d3.axisBottom(xScale));
+    g      = svg.append('g').attr('transform', `translate(${M.left},${M.top})`);
+    xAxis  = g.append('g').attr('class', 'x-axis')
+               .attr('transform', `translate(0,${IH})`);
 
     g.append('text')
-      .attr('class', 'x label')
+      .attr('class', 'x-label')
+      .attr('x', IW / 2)
+      .attr('y', IH + 40)
       .attr('text-anchor', 'middle')
-      .attr('x', innerWidth / 2)
-      .attr('y', innerHeight + 40)
       .attr('fill', '#ffd700')
       .text('Average Rating (IMDb)');
   });
+
+  $: if (fullData.length && !layoutReady && mounted) {
+    computeLayout(fullData);    // RODA UMA VEZ
+    layoutReady = true;
+  }
+
+  $: if (layoutReady && data.length) {
+    drawChart(data);                 // Só redesenha
+  }
+
+  function computeLayout(all) {
+    // Domínios tirados do universo completo (fixos)
+    xScale.domain(d3.extent(all, d => +d.averageRating)).nice();
+    radiusScale.domain(d3.extent(all, d => +d.numVotes));
+
+    const sim = d3.forceSimulation(all)
+      .force('x', d3.forceX(d => xScale(+d.averageRating)).strength(1))
+      .force('y', d3.forceY(IH / 2).strength(0.05))
+      .force('collide', d3.forceCollide(d => radiusScale(+d.numVotes) + 1))
+      .stop();
+
+    sim.tick(500);
+
+    // Guarda posição e raio no cache
+    all.forEach(d => layout.set(d.tconst, {
+      x: d.x,
+      y: d.y,
+      r: radiusScale(+d.numVotes)
+    }));
+  }
+
+  function drawChart(crr) {
+    if (!g || !xAxis) {
+      console.warn("Tentou desenhar antes do DOM estar montado.");
+      return;
+    }
+
+    // xScale.domain(extent(crr))
+    xAxis.call(d3.axisBottom(xScale));
+
+    g.selectAll('circle')
+    .data(crr, d => d.tconst)
+    .join(
+      enter => enter.append('circle')
+                    .attr('stroke', '#333')
+                    .attr('stroke-width', .5)
+                    .attr('fill', d => colorScale(d.oscarWins > 0 ? 1 : 0))
+                    .attr('r', 0)
+                    .on('mouseover', handleOver)
+                    .on('mouseout', () => d3.select(tipEl).style('display','none'))
+                    .on('click', (e,d) =>
+                        dispatch('movieSelected', { id: d.tconst, data: d }))
+                    .call(sel => sel.transition().duration(250)
+                                      .attr('r', d => layout.get(d.tconst).r)),
+      update => update,
+      exit   => exit.transition().duration(250).attr('r',0).remove()
+    )
+    .attr('cx', d => layout.get(d.tconst).x)
+    .attr('cy', d => layout.get(d.tconst).y);
+  }
+
+  // Tooltip
+  function handleOver(event, d) {
+    d3.select(tipEl)
+      .style('display', 'block')
+      .html(`<strong>${d.primaryTitle}</strong>`)
+      .style('left', `${event.pageX + 10}px`)
+      .style('top',  `${event.pageY + 10}px`);
+  }
 </script>
 
 <div class="chart-container">
   <svg bind:this={svgEl} class="bubble-chart"></svg>
-  <div bind:this={tooltipEl} class="tooltip-bubble" style="position: absolute; display: none;"></div>
+  <div bind:this={tipEl} class="tooltip-bubble" style="position:absolute;display:none;"></div>
 </div>
