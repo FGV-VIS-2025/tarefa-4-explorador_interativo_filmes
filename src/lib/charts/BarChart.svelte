@@ -1,11 +1,10 @@
 <script>
     import { onMount, afterUpdate } from 'svelte';
     import * as d3 from 'd3';
-    import '$lib/styles/barchart.css';
 
     export let data = [];
     export let labels = [];
-    
+
     const chartConfig = {
         width: 550,
         height: 380,
@@ -23,9 +22,7 @@
     let yScale = d3.scaleLinear().range([innerHeight, 0]);
 
     function drawChart() {
-        console.log('drawChart() em barchart.svelte');
-        if (!labels.length || !data.length || !barsGroup){
-            console.log('Erro: labels ou data vazios ou barsGroup não definido.');
+        if (!labels.length || !data.length || !barsGroup) {
             return;
         }
 
@@ -48,20 +45,21 @@
             .attr('x', (_, i) => xScale(labels[i]))
             .attr('y', innerHeight)
             .attr('width', xScale.bandwidth())
-            .attr('height', 0);
+            .attr('height', 0)
+            .attr('fill', '#50d100'); // cor das barras
         
         const allBars = barsEnter.merge(bars);
 
-        allBars.
-            on('mouseover', (event, d) => {
+        allBars
+            .on('mouseover', (event, d) => {
                 tooltipG
-                .style('display', 'block')
-                .html(`Value: <strong>${d}</strong>`);
+                    .style('display', 'block')
+                    .html(`Valor: <strong>${d}</strong>`);
             })
             .on('mousemove', (event) => {
                 tooltipG
-                .style('left', `${event.pageX + 10}px`)
-                .style('top',  `${event.pageY - 28}px`);
+                    .style('left', `${event.pageX + 10}px`)
+                    .style('top',  `${event.pageY - 28}px`);
             })
             .on('mouseout', () => {
                 tooltipG.style('display', 'none');
@@ -69,10 +67,10 @@
 
         allBars
             .transition().duration(600)
-                .attr('x', (_, i) => xScale(labels[i]))
-                .attr('y', d => yScale(d))
-                .attr('width', xScale.bandwidth())
-                .attr('height', d => innerHeight - yScale(d));
+            .attr('x', (_, i) => xScale(labels[i]))
+            .attr('y', d => yScale(d))
+            .attr('width', xScale.bandwidth())
+            .attr('height', d => innerHeight - yScale(d));
         
         d3.select(xAxisGroup)
             .transition().duration(600)
@@ -95,23 +93,36 @@
     afterUpdate(drawChart);
 </script>
 
-<div bind:this={tooltip} class="tooltip"></div>
+<div bind:this={tooltip}
+     style="
+        position: absolute;
+        display: none;
+        background: #424242;
+        color: #fffcfc;
+        border: 1px solid #ffd700;
+        padding: 0.5rem;
+        border-radius: 4px;
+        pointer-events: none;
+        font-size: 13px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+        z-index: 10;
+     "></div>
 
-<svg {width} {height}>
-    <g
-      bind:this={barsGroup}
-      transform={`translate(${margin.left},${margin.top})`}
-    ></g>
-    
-    <g
-      bind:this={xAxisGroup}
-      class="x-axis"
-      transform={`translate(${margin.left},${margin.top + innerHeight})`}
-    ></g>
+<div style="display: flex; flex-direction: column; align-items: center; margin-top: 1rem;">
+  <svg {width} {height}>
+    <g bind:this={barsGroup} transform={`translate(${margin.left},${margin.top})`}></g>
+    <g bind:this={xAxisGroup} class="x-axis" transform={`translate(${margin.left},${margin.top + innerHeight})`}></g>
+    <g bind:this={yAxisGroup} class="y-axis" transform={`translate(${margin.left},${margin.top})`}></g>
+  </svg>
 
-    <g
-      bind:this={yAxisGroup}
-      class="y-axis"
-      transform={`translate(${margin.left},${margin.top})`}
-    ></g>
-</svg>
+  <!-- Legenda visível abaixo do gráfico -->
+  <p style="
+    color: #ccc;
+    font-size: 0.9rem;
+    text-align: center;
+    margin-top: 0.75rem;
+    max-width: 600px;
+  ">
+    Este gráfico mostra a distribuição de filmes por gênero com base no número de indicações ou vitórias no Oscar, entre os anos selecionados.
+  </p>
+</div>

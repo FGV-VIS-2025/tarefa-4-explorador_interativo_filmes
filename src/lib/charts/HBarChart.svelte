@@ -85,8 +85,10 @@
     afterUpdate(drawChart);
 </script>
 
+<!-- Tooltip flutuante -->
 <div bind:this={tooltipEl} class="tooltip-hbar"></div>
 
+<!-- SVG com título, eixos e barras -->
 <svg {width} {height} class="hbar-chart">
     <text
         class="chart-title"

@@ -194,3 +194,14 @@ button:hover {
   display: flex;
   justify-content: center;
 }
+
+.chart-caption {
+  color: #ccc;
+  text-align: center;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.3;
+}
