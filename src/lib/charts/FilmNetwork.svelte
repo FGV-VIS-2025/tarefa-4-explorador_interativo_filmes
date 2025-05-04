@@ -5,8 +5,8 @@
   import { loadGraph, loadMoviesFullData } from '$lib/utils/dataLoader.js';
 
   let graphData = null;
-  let width = 1000;
-  let height = 600;
+  let width = 1200;
+  let height = 800;
   let svgElement;
   let tooltipElement;
 
@@ -150,7 +150,7 @@
     )
     .attr('fill', d =>
       d.bipartite === 'person'
-        ? '#ccc'
+        ? 'white'
         : colorScale(d.oscarWins > 0 ? 1 : 0)
     )
     .attr('stroke', d => d.id === movieId ? 'red' : null)

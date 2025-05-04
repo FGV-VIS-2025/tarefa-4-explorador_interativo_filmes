@@ -134,14 +134,30 @@
       </div>
     </main>
   {/key}
-{:else}
+  {:else}
   <h2>Movies Network</h2>
+  <p class="network-explanation">
+   This visualization shows how the films (circles) are connected to the people who participated (stars), colored according to their role:
+directors, screenwriters, or actors.
+  </p>
   <div class="network-view">
-    <div class="graph-container">
+    <figure class="graph-container">
       <FilmNetwork movieId={selectedMovie} on:volver={BackInitialView} />
-    </div>
-    <div class="film-details">
+      <figcaption class="network-legend">
+        <p><span class="legend-circle"></span> Movie (circle)</p>
+        <p><span class="legend-star"></span> Person (star)</p>
+        <p><span class="legend-link" style="background:#1f77b4;"></span> Director</p>
+        <p><span class="legend-link" style="background:#2ca02c;"></span> Writer</p>
+        <p><span class="legend-link" style="background:#ff6600;"></span> Actor</p>
+      </figcaption>
+    </figure>
+
+    <figure class="film-details">
       <FilmDetails data={selectedData} />
-    </div>
+      <figcaption class="details-label">
+        <p>Detailed information about the selected film.</p>
+      </figcaption>
+    </figure>
   </div>
 {/if}
+
