@@ -38,41 +38,41 @@
 		e.preventDefault();
 	  }
 	}
-  </script>
+</script>
   
-  <style>
+<style>
 	.dropdown       { position: relative; width: 300px; }
 	.results        { position: absolute; background:#1e1e1e; border:1px solid #695a03;
-					  width:100%; max-height:200px; overflow-y:auto; z-index:100; }
+						width:100%; max-height:200px; overflow-y:auto; z-index:100; }
 	.results button { width:100%; text-align:left; padding:.5rem; background:none; border:none;
-					  color:inherit; cursor:pointer; }
+						color:inherit; cursor:pointer; }
 	.results button:hover,
 	.results button.selected { background:#ffd700; color:black; }
-  </style>
+</style>
   
-  <div class="dropdown">
+<div class="dropdown">
 	<input
-	  type="text"
-	  placeholder="Buscar filme"
-	  bind:value={query}
-	  on:input={() => { showList = true; selectedIndex = -1; }}
-	  on:focus={() => showList = true}
-	  on:keydown={handleKey}
+		type="text"
+		placeholder="Buscar filme"
+		bind:value={query}
+		on:input={() => { showList = true; selectedIndex = -1; }}
+		on:focus={() => showList = true}
+		on:keydown={handleKey}
 	/>
-  
+
 	{#if showList && options.length > 0}
-	  <div class="results">
+		<div class="results">
 		{#each options as opt, i (opt.tconst)}
-		  <button
+			<button
 			type="button"
 			data-idx={i}                    
 			class:selected={i === selectedIndex}
 			on:mousedown={() => select(opt)}
-		  >
+			>
 			{opt.primaryTitle} ({opt.startYear})
-		  </button>
+			</button>
 		{/each}
-	  </div>
+		</div>
 	{/if}
-  </div>
+</div>
   
