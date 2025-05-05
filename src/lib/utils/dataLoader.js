@@ -34,7 +34,7 @@ export async function loadGraph() {
 	return cachedGraph;
   }
 
-  const res = await fetch(`${base}/data/grafo_peliculas.json`);
+  const res = await fetch(`${base}/data/grafo_bipartito_roles.json`);
   cachedGraph = await res.json();
   console.log('Loaded graph data from JSON file');
   return cachedGraph;

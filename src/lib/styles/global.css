@@ -17,7 +17,7 @@
 }
 
 .noUi-connect {
-  background: #50d100;
+  background: #fff570;
 }
 
 body, html {
@@ -62,6 +62,29 @@ button:hover {
   margin: 2rem 0;
   width: 100%;
 }
+
+.bubble-legend {
+  font-size: 1.25rem;    /* texto más grande */
+  gap: 0.75rem;          /* mayor separación entre líneas */
+}
+
+/* Agrandar SVG de tamaños */
+.bubble-legend svg {
+  width: 200px;
+  height: 200px;
+}
+
+/* Agrandar círculos dentro del SVG */
+.bubble-legend svg circle {
+  stroke: #ffffff;
+  stroke-width: 2px;
+}
+
+.bubble-color-legend span {
+  width: 24px;
+  height: 24px;
+}
+
 
 .home-container {
   display: flex;
@@ -110,7 +133,7 @@ button:hover {
 
 /* Escopo das barras do HBarChart */
 .hbar-chart .bar-hbar {
-  fill: #50d100;
+  fill: #ffd036;
 }
 
 .hbar-chart .chart-title {
@@ -193,6 +216,154 @@ button:hover {
   display: flex;
   justify-content: center;
 }
+
+.bubble-legend,
+.network-legend {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 1.25rem;   /* texto más grande */
+  gap: 0.75rem;         /* mayor separación */
+  margin-top: 1rem;
+  color: #f0e6d2;
+}
+
+/* Leyenda de color */
+.bubble-color-legend,
+.network-legend-colors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.legend-color,
+.legend-link {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+  border-radius: 50%;
+  border: 1px solid #fff;
+}
+
+/* Colores específicos */
+.legend-color.has-win,
+.legend-link.win {
+  background: #ffd700;
+}
+.legend-color.no-win,
+.legend-link.no-win {
+  background: #aaa;
+}
+
+/* Leyenda de tamaño (SVG círculos centrados) */
+.bubble-legend svg {
+  display: block;
+  margin: 0 auto;
+}
+
+/* Leyenda de FilmNetwork: iconos inline */
+.network-legend p {
+  display: flex;
+  align-items: center;
+}
+.network-legend span {
+  width: 24px;
+  height: 24px;
+  margin-right: 0.5rem;
+  display: inline-block;
+}
+.network-legend .legend-circle {
+  border-radius: 50%;
+  background: #ffd700;
+}
+.network-legend .legend-star {
+  clip-path: polygon(
+    50% 0%, 61% 35%, 98% 35%,
+    68% 57%, 79% 91%,
+    50% 70%, 21% 91%,
+    32% 57%, 2% 35%,
+    39% 35%
+  );
+  background: #ccc;
+}
+
+
+.bubble-legend,
+.network-legend {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 1.25rem;   /* texto más grande */
+  gap: 0.75rem;         /* mayor separación */
+  margin-top: 1rem;
+  color: #f0e6d2;
+}
+
+/* Leyenda de color */
+.bubble-color-legend,
+.network-legend-colors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.legend-color,
+.legend-link {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+  border-radius: 50%;
+  border: 1px solid #fff;
+}
+
+/* Colores específicos */
+.legend-color.has-win,
+.legend-link.win {
+  background: #ffd700;
+}
+.legend-color.no-win,
+.legend-link.no-win {
+  background: #aaa;
+}
+
+/* Leyenda de tamaño (SVG círculos centrados) */
+.bubble-legend svg {
+  display: block;
+  margin: 0 auto;
+}
+
+/* Leyenda de FilmNetwork: iconos inline */
+.network-legend p {
+  display: flex;
+  align-items: center;
+}
+.network-legend span {
+  width: 24px;
+  height: 24px;
+  margin-right: 0.5rem;
+  display: inline-block;
+}
+.network-legend .legend-circle {
+  border-radius: 50%;
+  background: #ffd700;
+}
+.network-legend .legend-star {
+  clip-path: polygon(
+    50% 0%, 61% 35%, 98% 35%,
+    68% 57%, 79% 91%,
+    50% 70%, 21% 91%,
+    32% 57%, 2% 35%,
+    39% 35%
+  );
+  background: #ccc;
+}
+.network-legend .legend-link.director { background: #1f77b4; }
+.network-legend .legend-link.writer   { background: #2ca02c; }
+.network-legend .legend-link.actor    { background: #ff6600; }
 
 .bubble-chart circle.highlighted {
   stroke: #ffd700;
