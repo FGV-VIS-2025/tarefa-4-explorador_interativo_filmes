@@ -155,6 +155,34 @@
         </button> 
       </div>
 
+      <div class="bubble-legend">
+        <!-- Bubble size legend -->
+        <svg width="150" height="150">
+          <!-- Large circle -->
+          <circle cx="75" cy="75" r="40" fill="none" stroke="#333" />
+          <text x="75" y="25" text-anchor="middle" stroke="#fff" font-size="12">
+            1000000 votes
+          </text>
+          <!-- Medium circle -->
+          <circle cx="75" cy="75" r="15" fill="none" stroke="#333" />
+          <text x="75" y="55" text-anchor="middle" stroke="#fff" font-size="12">
+            10000 votes
+          </text>
+          <!-- Small circle -->
+          <circle cx="75" cy="75" r="5" fill="none" stroke="#333" />
+          <text x="75" y="95" text-anchor="middle" stroke="#fff" font-size="12">
+            1000 votes
+          </text>
+        </svg>
+    
+        <!-- Bubble color legend -->
+        <div class="bubble-color-legend">
+          <p><span class="legend-color has-win"></span> Oscar win</p>
+          <p><span class="legend-color no-win"></span> No Oscar win</p>
+        </div>
+      </div>
+      
+
       <BubbleChart 
         fullData={fullData} 
         data={filteredData} 
@@ -169,12 +197,30 @@
   </main>
 {:else}
   <h2>Movies Network</h2>
+  <p class="network-explanation" style="text-align: center; margin: 0 auto;">
+    This visualization shows how the films (circles) are connected to the people who participated (stars), colored according to their role: directors, screenwriters, or actors. The red one is the one u choose
+  </p>
+  
   <div class="network-view">
-    <div class="graph-container">
+    <figure class="graph-container">
       <FilmNetwork movieId={selectedMovie} on:volver={BackInitialView} />
-    </div>
-    <div class="film-details">
+      <figcaption class="network-legend">
+        <h2>Nodes</h2>
+        <p><span class="legend-circle"></span> Movie (circle)</p>
+        <p><span class="legend-star"></span> Person (star)</p>
+        <h2>Edges</h2>
+        <p><span class="legend-link" style="background:#1f77b4;"></span> Director</p>
+        <p><span class="legend-link" style="background:#2ca02c;"></span> Writer</p>
+        <p><span class="legend-link" style="background:#ff6600;"></span> Actor</p>
+      </figcaption>
+    </figure>
+
+    <figure class="film-details">
       <FilmDetails data={selectedData} />
-    </div>
+      <figcaption class="details-label">
+        <p>Detailed information about the selected film.</p>
+      </figcaption>
+    </figure>
   </div>
 {/if}
+
