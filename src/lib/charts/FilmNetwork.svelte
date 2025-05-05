@@ -166,11 +166,11 @@
               ID: ${d.id}<br/>
               Roles: ${roles.length ? roles.join(', ') : 'Ninguno'}`;
     } else {
-      html = `<strong>${d.primaryTitle || d.title || 'Sin título'}</strong><br/>
-              Ganó Óscar: ${d.oscarWins > 0 ? 'Sí' : 'No'}<br/>
-              Rating: ${d.averageRating || 'N/A'}<br/>
-              Género: ${d.genres || 'N/A'}<br/>
-              Director(es): ${d.directors || 'N/A'}`;
+      html = `<strong>${d.primaryTitle || d.title || 'Untitled'}</strong><br/>
+          Won Oscar: ${d.oscarWins > 0 ? 'Yes' : 'No'}<br/>
+          Rating: ${d.averageRating || 'N/A'}<br/>
+          Genre: ${d.genres || 'N/A'}<br/>
+          Director(s): ${d.directors || 'N/A'}`;
     }
     tooltip
       .style('display', 'block')
