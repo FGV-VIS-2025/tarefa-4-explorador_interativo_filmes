@@ -205,8 +205,10 @@
     <figure class="graph-container">
       <FilmNetwork movieId={selectedMovie} on:volver={BackInitialView} />
       <figcaption class="network-legend">
+        <h2>Nodes</h2>
         <p><span class="legend-circle"></span> Movie (circle)</p>
         <p><span class="legend-star"></span> Person (star)</p>
+        <h2>Edges</h2>
         <p><span class="legend-link" style="background:#1f77b4;"></span> Director</p>
         <p><span class="legend-link" style="background:#2ca02c;"></span> Writer</p>
         <p><span class="legend-link" style="background:#ff6600;"></span> Actor</p>
