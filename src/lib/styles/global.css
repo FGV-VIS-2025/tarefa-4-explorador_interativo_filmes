@@ -63,6 +63,29 @@ button:hover {
   width: 100%;
 }
 
+.bubble-legend {
+  font-size: 1.25rem;    /* texto más grande */
+  gap: 0.75rem;          /* mayor separación entre líneas */
+}
+
+/* Agrandar SVG de tamaños */
+.bubble-legend svg {
+  width: 200px;
+  height: 200px;
+}
+
+/* Agrandar círculos dentro del SVG */
+.bubble-legend svg circle {
+  stroke: #ffffff;
+  stroke-width: 2px;
+}
+
+.bubble-color-legend span {
+  width: 24px;
+  height: 24px;
+}
+
+
 .home-container {
   display: flex;
   flex-direction: column;
@@ -195,47 +218,77 @@ button:hover {
   justify-content: center;
 }
 
-.network-explanation {
-  margin: 0.5rem 0 1rem;
-  font-style: italic;
-  color: #ffffff;
-  text-align: center;
-}
-
+.bubble-legend,
 .network-legend {
-  font-size: 0.9rem;
-  color: #ffffff;
-  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 1.25rem;   /* texto más grande */
+  gap: 0.75rem;         /* mayor separación */
+  margin-top: 1rem;
+  color: #f0e6d2;
 }
 
-.network-legend span {
+/* Leyenda de color */
+.bubble-color-legend,
+.network-legend-colors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.legend-color,
+.legend-link {
   display: inline-block;
-  width: 12px;
-  height: 12px;
-  margin-right: 6px;
+  width: 16px;
+  height: 16px;
+  margin-right: 0.5rem;
   vertical-align: middle;
-}
-
-.legend-circle {
   border-radius: 50%;
-  background: #ffd700; /* mismo color de películas Óscar */
+  border: 1px solid #fff;
 }
 
-.legend-star {
-  /* puedes usar un SVG inline o un icono de fuente */
-  background: #ccc;
+/* Colores específicos */
+.legend-color.has-win,
+.legend-link.win {
+  background: #ffd700;
+}
+.legend-color.no-win,
+.legend-link.no-win {
+  background: #aaa;
+}
+
+/* Leyenda de tamaño (SVG círculos centrados) */
+.bubble-legend svg {
+  display: block;
+  margin: 0 auto;
+}
+
+/* Leyenda de FilmNetwork: iconos inline */
+.network-legend p {
+  display: flex;
+  align-items: center;
+}
+.network-legend span {
+  width: 24px;
+  height: 24px;
+  margin-right: 0.5rem;
+  display: inline-block;
+}
+.network-legend .legend-circle {
+  border-radius: 50%;
+  background: #ffd700;
+}
+.network-legend .legend-star {
   clip-path: polygon(
-    50% 0%, 61% 35%, 98% 35%, 
-    68% 57%, 79% 91%, 
-    50% 70%, 21% 91%, 
-    32% 57%, 2% 35%, 
+    50% 0%, 61% 35%, 98% 35%,
+    68% 57%, 79% 91%,
+    50% 70%, 21% 91%,
+    32% 57%, 2% 35%,
     39% 35%
   );
+  background: #ccc;
 }
-
-.legend-link {
-  width: 16px;
-  height: 4px;
-  display: inline-block;
-  margin-right: 6px;
-}
+.network-legend .legend-link.director { background: #1f77b4; }
+.network-legend .legend-link.writer   { background: #2ca02c; }
+.network-legend .legend-link.actor    { background: #ff6600; }
