@@ -1,38 +1,58 @@
-# create-svelte
+#  Visualização Interativa do Oscar
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+Este projeto apresenta uma ferramenta interativa para explorar filmes **indicados ao Oscar**, por meio de três visualizações integradas:
 
-## Creating a project
+1. **Gráfico de barras horizontal** que mostra os gêneros com mais indicações.
+2. **Bubble chart** que posiciona cada filme com base na nota média (rating IMDb) e mostra a popularidade (número de votos) pelo tamanho da bolha. A cor indica se o filme ganhou um Oscar.
+3. **Grafo de coautoria** onde os nós representam filmes ou pessoas e as arestas indicam conexões por equipe (atores, diretores ou roteiristas em comum).
 
-If you're seeing this, you've probably already done this step. Congrats!
+### Funcionalidades
+- Busca por nome para visualizar conexões no grafo.
+- Tooltips com informações ao passar o cursor.
+- Tamanho do nó proporcional ao popularidade.
+- Cores indicando premiação ou indicação no bubble chart.
+- Animações suaves com `d3.forceSimulation()` e `d3.transition()`.
+- Interface responsiva, desenvolvida em Svelte.
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+---
 
-# create a new project in my-app
-npm create svelte@latest my-app
-```
+## Justificativa de Design
 
-## Developing
+### Escolhas visuais
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+- **Bubble chart vs scatterplot:** optou-se pelo bubble chart com simulação por força (`forceSimulation`) para evitar sobreposição entre filmes com ratings e votos similares. Diferente do scatterplot tradicional, que tende a sobrepor pontos, o bubble chart oferece melhor uso do espaço e facilita a percepção de agrupamentos. O eixo X mantém o valor de rating explícito, e o tamanho da bolha comunica a relevância do filme.
 
-```bash
-npm run dev
+- **Grafo de colaborações:** a escolha por grafo permite revelar relações ocultas entre os filmes indicados, formando comunidades criativas.
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+- **Tooltips e interações:** tooltips móveis foram incluídos para detalhar cada filme sem poluir a tela. No bubble chart, o clique destaca filmes; no grafo, o usuário pode buscar um ID para revelar seu entorno relacional.
 
-## Building
+- **Animações:** as transições com `d3.transition()` e simulações com `d3.forceSimulation()` melhoram a fluidez das atualizações e tornam a exploração mais envolvente.
 
-To create a production version of your app:
+### Alternativas consideradas
 
-```bash
-npm run build
-```
+- **Gráfico de dispersão:** descartado por dificultar a leitura em regiões de alta densidade.
+- **Filtros múltiplos:** considerados, mas substituídos por busca direta para manter o foco exploratório e comparativo.
+- **Outros layouts de grafo:** circular ou hierárquico foram descartados por não representar bem a topologia relacional entre filmes.
 
-You can preview the production build with `npm run preview`.
+---
 
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+## Processo de Desenvolvimento
+
+Amanda foi responsável por todas as etapas:
+- Limpeza e fusão dos dados (IMDb + indicações ao Oscar).
+- Criação do grafo com agrupamento por componente conexa.
+- Construção do bubble chart com escalas e simulação.
+- Integração dos componentes em Svelte e estilização da interface.
+
+---
+
+## Fontes e Inspirações
+
+- **Dados:** IMDb Datasets + Dataset externo de indicações ao Oscar
+- **Visualizações:**
+  - Grafo com força: https://github.com/vasturiano/force-graph
+  - Bubble chart com força e eixo: https://observablehq.com/@d3/bubble-chart
+
+---
+
+Este projeto foi desenvolvido como parte de uma atividade de visualização interativa no curso. Seu foco é permitir a **exploração intuitiva** das conexões criativas e do reconhecimento dos filmes indicados ao Oscar.
