@@ -87,34 +87,33 @@
       return;
     }
 
-    // xScale.domain(extent(crr))
     xAxis.call(d3.axisBottom(xScale));
 
     const selection = g.selectAll('circle')
       .data(crr, d => d.tconst)
       .join(
         enter => enter.append('circle')
+          .attr('class', d => `bubble ${d.tconst === highlightedMovieId ? 'highlighted' : ''}`)
           .attr('stroke', '#333')
           .attr('stroke-width', .5)
           .attr('fill', d => colorScale(d.oscarWins > 0 ? 1 : 0))
           .attr('r', 0)
-          .attr('opacity', d => highlightedMovieId ? (d.tconst === highlightedMovieId ? 1 : 0.2) : 0.85)
+          .style('opacity', d => highlightedMovieId ? (d.tconst === highlightedMovieId ? 1 : 0.2) : 0.85)
           .on('mouseover', handleOver)
           .on('mouseout', () => d3.select(tipEl).style('display','none'))
           .on('click', (e,d) => dispatch('movieSelected', { id: d.tconst, data: d }))
           .call(sel => sel.transition().duration(250)
             .attr('r', d => layout.get(d.tconst).r)),
         update => update
-          .attr('class', d => d.tconst === highlightedMovieId ? 'highlighted' : '')
+          .attr('class', d => `bubble ${d.tconst === highlightedMovieId ? 'highlighted' : ''}`)
           .attr('fill', d => colorScale(d.oscarWins > 0 ? 1 : 0))
-          .attr('opacity', d => highlightedMovieId ? (d.tconst === highlightedMovieId ? 1 : 0.2) : 0.85),
+          .style('opacity', d => highlightedMovieId ? (d.tconst === highlightedMovieId ? 1 : 0.2) : 0.85),
         exit => exit.transition().duration(250).attr('r', 0).remove()
       );
 
     selection
       .attr('cx', d => layout.get(d.tconst).x)
       .attr('cy', d => layout.get(d.tconst).y);
-
 
     if (highlightedMovieId) {
       g.selectAll('circle')
