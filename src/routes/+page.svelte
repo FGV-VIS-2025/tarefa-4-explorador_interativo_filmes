@@ -81,6 +81,11 @@
     selectedMovie = null;
     selectedData = null;
   }
+
+  function clearSelection() {
+    searchQuery = '';
+    highlightedMovieId = null;
+  }
 </script>
 
 <h1 style="text-align: center; color: #ffd700;">Interactive Movie Explorer</h1>
@@ -136,15 +141,19 @@
     <h2>Analysis of movies based on ratings and Oscar awards</h2>
 
     <div class="bubble-container">
-      <FilmSearch
-        options={fullData.filter(d => d.primaryTitle.toLowerCase().includes(searchQuery.toLowerCase()))}
-        bind:query={searchQuery}
-        on:select={(e) => {
-          console.log(`Selected movie: ${e.detail.id}`);
-          highlightedMovieId = e.detail.id;
-          console.log(`Selected movie: ${e.detail.id}`);
-        }}
-      />
+      <div class="search-wrapper">
+        <FilmSearch
+          options={filteredData.filter(d => d.primaryTitle.toLowerCase().includes(searchQuery.toLowerCase()))}
+          bind:query={searchQuery}
+          on:select={(e) => {
+            console.log(`Selected movie: ${e.detail.id}`);
+            highlightedMovieId = e.detail.id;
+          }}
+        />
+        <button class="clear-button" on:click={clearSelection}>
+          Clear selection
+        </button> 
+      </div>
 
       <BubbleChart 
         fullData={fullData} 

@@ -53,7 +53,7 @@
 <div class="dropdown">
 	<input
 		type="text"
-		placeholder="Buscar filme"
+		placeholder="Search for a movie"
 		bind:value={query}
 		on:input={() => { showList = true; selectedIndex = -1; }}
 		on:focus={() => showList = true}
